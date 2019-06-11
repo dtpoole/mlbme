@@ -12,7 +12,7 @@ type configuration struct {
 	StatsURL          string `json:"statsURL"`
 	StreamPlaylistURL string `json:"streamPlaylistURL"`
 	CDN               string `json:"cdn"`
-	CheckStreams      bool   `json:"checkStreams`
+	CheckStreams      bool   `json:"checkStreams"`
 	Proxy             struct {
 		Port int `json:"port"`
 	} `json:"proxy"`
