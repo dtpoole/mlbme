@@ -25,7 +25,7 @@ type configuration struct {
 func loadConfiguration(file string) configuration {
 
 	if _, err := os.Stat(file); os.IsNotExist(err) {
-		println(file + ": File doesn't exist.")
+		fmt.Println(file + ": File doesn't exist.")
 		os.Exit(1)
 	}
 

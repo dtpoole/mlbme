@@ -32,8 +32,8 @@ func runStreamlink(si StreamInfo) {
 	args = append(args, "--player", config.VLC.Path)
 	//args = append(args, "--player", config.VLC.Path+" --sout '#standard{access=http,mux=ts,dst=:6789}'")
 
-	println("Starting streamlink...")
-	//println(strings.Join(args, " \\\n"))
+	fmt.Println("Starting streamlink...")
+	//fmt.Println(strings.Join(args, " \\\n"))
 
 	env := os.Environ()
 	execErr := syscall.Exec(streamlinkPath, args, env)

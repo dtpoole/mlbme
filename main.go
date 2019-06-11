@@ -159,7 +159,7 @@ func startStream(streamID string) {
 
 	i, ok := streams[streamID]
 	if !ok {
-		println("Stream doesn't exist.")
+		fmt.Println("Stream doesn't exist.")
 	} else {
 		runStreamlink(i)
 	}
@@ -176,7 +176,7 @@ func run(c *cli.Context) {
 	}
 
 	if len(streams) == 0 {
-		println("No streams available.")
+		fmt.Println("No streams available.")
 	}
 
 	if c.String("stream") != "" {
