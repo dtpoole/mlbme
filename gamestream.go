@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// StreamInfo contains information on the video stream.
 type StreamInfo struct {
 	StreamAvailable bool
 	StreamURL       string

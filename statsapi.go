@@ -5,17 +5,20 @@ import (
 	"time"
 )
 
+// Score represents line score for team
 type Score struct {
 	Runs   int `json:"runs"`
 	Hits   int `json:"hits"`
 	Errors int `json:"errors"`
 }
 
+// Scoring holds Home and Away team line score
 type Scoring struct {
 	Home Score `json:"home"`
 	Away Score `json:"away"`
 }
 
+// LineScore contains information about the current state of the game
 type LineScore struct {
 	CurrentInning        int     `json:"currentInning"`
 	CurrentInningOrdinal string  `json:"currentInningOrdinal"`
@@ -23,12 +26,14 @@ type LineScore struct {
 	Scoring              Scoring `json:"teams"`
 }
 
+// Team details
 type Team struct {
 	Name         string `json:"teamName"`
 	FullName     string `json:"name"`
 	Abbreviation string `json:"abbreviation"`
 }
 
+// Teams contains the teams playing
 type Teams struct {
 	Away struct {
 		Team Team `json:"team"`
@@ -38,6 +43,7 @@ type Teams struct {
 	} `json:"home"`
 }
 
+// MediaItem contains media available for the game
 type MediaItem struct {
 	ID            int    `json:"id"`
 	MediaID       string `json:"mediaId"`
@@ -47,6 +53,7 @@ type MediaItem struct {
 	CallLetters   string `json:"callLetters"`
 }
 
+// Game has details on a game.
 type Game struct {
 	GamePk     int   `json:"gamePk"`
 	Teams      Teams `json:"teams"`
@@ -66,6 +73,7 @@ type Game struct {
 	LineScore LineScore `json:"linescore"`
 }
 
+// Data root of the JSON. Contains Dates array.
 type Data struct {
 	Dates []struct {
 		TotalGames           int    `json:"totalGames"`
@@ -74,6 +82,7 @@ type Data struct {
 	} `json:"dates"`
 }
 
+// Schedule contains details of the day's MLB games.
 type Schedule struct {
 	Date                 string
 	URL                  string
@@ -82,6 +91,7 @@ type Schedule struct {
 	Games                []Game
 }
 
+// GetMLBSchedule gets today's schedule of games
 func GetMLBSchedule() Schedule {
 
 	var s = new(Schedule)
@@ -94,6 +104,7 @@ func GetMLBSchedule() Schedule {
 		s.Date = dt.Local().Format("2006-01-02")
 	}
 
+	// we are only getting one day of data
 	s.URL = fmt.Sprintf(config.StatsURL, s.Date)
 
 	d := new(Data)
