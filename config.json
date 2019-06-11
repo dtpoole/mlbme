@@ -1,0 +1,13 @@
+{
+    "statsURL": "",
+    "streamPlaylistURL": "",
+    "checkStreams": true,
+    "cdn": "akc",
+    "proxy": {
+        "port": 8050
+    },
+    "vlc": {
+        "path": "/Applications/VLC.app/Contents/MacOS/VLC",
+        "args": "--player-passthrough hls --verbose-player"
+    }
+}
