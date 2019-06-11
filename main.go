@@ -15,7 +15,7 @@ import (
 
 var (
 	config  configuration
-	streams map[string]StreamInfo
+	streams map[string]Stream
 	s       Schedule
 )
 
@@ -25,6 +25,7 @@ func hasGameStarted(state string) bool {
 	switch state {
 	case
 		"Scheduled",
+		"Postponed",
 		"Pre-Game":
 		return false
 	}
@@ -36,6 +37,7 @@ func isActiveGame(state string) bool {
 	switch state {
 	case
 		"Pre-Game",
+		"Postponed",
 		"Scheduled",
 		"Game Over",
 		"Final":
@@ -71,17 +73,10 @@ func getStreamDisplay(g Game) string {
 
 	var streamDisplay strings.Builder
 
-	for _, epg := range g.Content.Media.EPG {
-		if epg.Title != "MLBTV" {
-			continue
-		}
-		for _, item := range epg.MediaItems {
-			_, ok := streams[strconv.Itoa(item.ID)]
-			if ok {
-				streamDisplay.WriteString(item.MediaFeedType + " (" + item.CallLetters + ") [" + strconv.Itoa(item.ID) + "]\n")
-			}
-		}
+	for _, s := range g.Streams {
+		streamDisplay.WriteString(s.MediaFeedType + " (" + s.CallLetters + ") [" + s.ID + "]\n")
 	}
+
 	return strings.TrimSpace(streamDisplay.String())
 
 }
@@ -149,7 +144,7 @@ func refresh(team string) {
 	s = GetMLBSchedule()
 
 	if config.CheckStreams {
-		streams = checkAvailableStreams(s)
+		checkAvailableStreams(s)
 	}
 
 	displayGames(s, team)

@@ -10,14 +10,6 @@ import (
 	"strings"
 )
 
-// StreamInfo contains information on the video stream.
-type StreamInfo struct {
-	StreamAvailable bool
-	StreamURL       string
-	StreamPlaylist  string
-	MediaItem       *MediaItem
-}
-
 func getM3U8Url(url string) string {
 
 	response, err := http.Get(url)
@@ -45,9 +37,7 @@ func getM3U8Url(url string) string {
 
 }
 
-func checkAvailableStreams(s Schedule) map[string]StreamInfo {
-
-	m := make(map[string]StreamInfo)
+func checkAvailableStreams(s Schedule) {
 
 	for _, g := range s.Games {
 
@@ -61,28 +51,23 @@ func checkAvailableStreams(s Schedule) map[string]StreamInfo {
 			}
 
 			for _, item := range epg.MediaItems {
-
-				var si = new(StreamInfo)
-				si.StreamAvailable = false
-				si.MediaItem = &item
-
 				if item.MediaState == "MEDIA_ON" {
+
+					var si = new(Stream)
+					si.ID = strconv.Itoa(item.ID)
 					si.StreamURL = fmt.Sprintf(config.StreamPlaylistURL, s.Date, strconv.Itoa(item.ID), config.CDN)
+
 					if si.StreamURL != "" {
 						si.StreamPlaylist = getM3U8Url(si.StreamURL)
 						if si.StreamPlaylist != "" {
-							si.StreamAvailable = true
+							g.Streams[si.ID] = *si
+							streams[si.ID] = *si
 						}
 					}
 				}
 
-				if si.StreamAvailable {
-					m[strconv.Itoa(item.ID)] = *si
-				}
 			}
 		}
 	}
-
-	return m
 
 }

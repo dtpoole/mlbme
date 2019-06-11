@@ -8,7 +8,7 @@ import (
 	"syscall"
 )
 
-func runStreamlink(si StreamInfo) {
+func runStreamlink(s Stream) {
 
 	var args []string
 
@@ -22,7 +22,7 @@ func runStreamlink(si StreamInfo) {
 
 	args = append(args, streamlinkPath)
 
-	args = append(args, fmt.Sprintf("hlsvariant://%s name_key=bitrate verify=False", si.StreamPlaylist), "best")
+	args = append(args, fmt.Sprintf("hlsvariant://%s name_key=bitrate verify=False", s.StreamPlaylist), "best")
 
 	args = append(args, "--http-header", fmt.Sprintf("\"%s\"", ua))
 	args = append(args, "--hls-segment-threads=4")

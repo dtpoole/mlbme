@@ -71,6 +71,7 @@ type Game struct {
 		Link string `json:"link"`
 	} `json:"content"`
 	LineScore LineScore `json:"linescore"`
+	Streams   map[string]Stream
 }
 
 // Data root of the JSON. Contains Dates array.
@@ -89,6 +90,15 @@ type Schedule struct {
 	TotalGames           int
 	TotalGamesInProgress int
 	Games                []Game
+}
+
+// Stream contains information on the video stream.
+type Stream struct {
+	ID             string
+	StreamURL      string
+	StreamPlaylist string
+	MediaFeedType  string `json:"mediaFeedType"`
+	CallLetters    string `json:"callLetters"`
 }
 
 // GetMLBSchedule gets today's schedule of games
