@@ -1,10 +1,13 @@
 {
-    "statsURL": "",
+    "statsURL": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=%s&hydrate=team,linescore,game(content(summary,media(epg)))&language=en",
     "streamPlaylistURL": "",
     "checkStreams": true,
     "cdn": "akc",
     "proxy": {
-        "port": 8050
+        "path": "go-mlbam-proxy-1.1.1/go-mlbam-proxy-1.1.1",
+        "port": 8050,
+        "domain": "",
+        "sourceDomains": ""
     },
     "vlc": {
         "path": "/Applications/VLC.app/Contents/MacOS/VLC",

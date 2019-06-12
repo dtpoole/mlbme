@@ -14,7 +14,10 @@ type configuration struct {
 	CDN               string `json:"cdn"`
 	CheckStreams      bool   `json:"checkStreams"`
 	Proxy             struct {
-		Port int `json:"port"`
+		Path          string `json:"path"`
+		Port          int    `json:"port"`
+		Domain        string `json:"domain"`
+		SourceDomains string `json:"sourceDomains"`
 	} `json:"proxy"`
 	VLC struct {
 		Path string `json:"path"`

@@ -156,6 +156,7 @@ func startStream(streamID string) {
 	if !ok {
 		fmt.Println("Stream doesn't exist.")
 	} else {
+		startProxy()
 		runStreamlink(i)
 	}
 }
@@ -163,7 +164,6 @@ func startStream(streamID string) {
 func run(c *cli.Context) {
 
 	config = loadConfiguration(c.String("config"))
-
 	refresh(c.String("team"))
 
 	if !config.CheckStreams {
