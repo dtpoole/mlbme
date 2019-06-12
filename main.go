@@ -188,7 +188,7 @@ func run(c *cli.Context) {
 	for {
 
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("> ")
+		fmt.Print(">> ")
 		input, _ := reader.ReadString('\n')
 
 		input = strings.TrimSpace(input)
@@ -197,6 +197,8 @@ func run(c *cli.Context) {
 			exit()
 		} else if input == "r" {
 			refresh("")
+		} else if input == "h" {
+			fmt.Println("[streamId] = play stream\nr = refresh\nq = quit")
 		} else {
 			startStream(input)
 		}
