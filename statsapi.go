@@ -95,7 +95,6 @@ type Schedule struct {
 // Stream contains information on the video stream.
 type Stream struct {
 	ID             string
-	StreamURL      string
 	StreamPlaylist string
 	MediaFeedType  string `json:"mediaFeedType"`
 	CallLetters    string `json:"callLetters"`

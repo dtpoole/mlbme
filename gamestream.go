@@ -37,6 +37,20 @@ func getM3U8Url(url string) string {
 
 }
 
+func getStreamPlaylist(date string, id int) string {
+
+	cdns := [2]string{"akc", "l3c"}
+
+	for _, cdn := range cdns {
+		streamURL := fmt.Sprintf(config.StreamPlaylistURL, date, strconv.Itoa(id), cdn)
+		playlist := getM3U8Url(streamURL)
+		if playlist != "" {
+			return playlist
+		}
+	}
+	return ""
+}
+
 func checkAvailableStreams(s Schedule) {
 
 	streams = make(map[string]Stream)
@@ -56,18 +70,17 @@ func checkAvailableStreams(s Schedule) {
 			for _, item := range epg.MediaItems {
 				if item.MediaState == "MEDIA_ON" {
 
-					var si = new(Stream)
-					si.ID = strconv.Itoa(item.ID)
-					si.StreamURL = fmt.Sprintf(config.StreamPlaylistURL, s.Date, strconv.Itoa(item.ID), config.CDN)
-					si.MediaFeedType = item.MediaFeedType
-					si.CallLetters = item.CallLetters
+					streamPlaylist := getStreamPlaylist(s.Date, item.ID)
 
-					if si.StreamURL != "" {
-						si.StreamPlaylist = getM3U8Url(si.StreamURL)
-						if si.StreamPlaylist != "" {
-							gs[si.ID] = *si
-							streams[si.ID] = *si
-						}
+					if streamPlaylist != "" {
+						var si = new(Stream)
+						si.ID = strconv.Itoa(item.ID)
+						si.MediaFeedType = item.MediaFeedType
+						si.CallLetters = item.CallLetters
+						si.StreamPlaylist = streamPlaylist
+
+						gs[si.ID] = *si
+						streams[si.ID] = *si
 					}
 				}
 
