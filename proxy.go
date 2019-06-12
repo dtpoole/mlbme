@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -24,7 +23,7 @@ func startProxy() {
 		log.Fatal("Unable to start proxy: ", err)
 	}
 
-	fmt.Println("Proxy started.")
+	log.Println("Proxy started.")
 
 }
 
@@ -33,6 +32,6 @@ func stopProxy() {
 		if err := proxyCmd.Process.Kill(); err != nil {
 			log.Fatal("Unable to stop proxy process: ", err)
 		}
-		fmt.Println("Proxy stopped.")
+		log.Println("Proxy stopped.")
 	}
 }

@@ -20,7 +20,7 @@ func runStreamlink(s Stream) {
 		panic(lookErr)
 	}
 
-	fmt.Println("Starting streamlink...")
+	log.Println("Starting streamlink...")
 
 	streamlinkCmd = exec.Command(streamlinkPath, fmt.Sprintf("hlsvariant://%s name_key=bitrate verify=False", s.StreamPlaylist),
 		"best", "--http-header", fmt.Sprintf("\"%s\"", ua), "--hls-segment-threads=4", "--https-proxy", "127.0.0.1:"+strconv.Itoa(config.Proxy.Port),
@@ -39,7 +39,7 @@ func runStreamlink(s Stream) {
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		m := scanner.Text()
-		fmt.Println(m)
+		log.Println(m)
 	}
 
 }
