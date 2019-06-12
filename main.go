@@ -67,7 +67,7 @@ func getTeamDisplay(teams Teams, singleLine bool) string {
 
 func getStreamDisplay(g Game) string {
 
-	if len(streams) == 0 || !isActiveGame(g.GameStatus.DetailedState) {
+	if len(g.Streams) == 0 || !isActiveGame(g.GameStatus.DetailedState) {
 		return "\n"
 	}
 

@@ -39,7 +39,10 @@ func getM3U8Url(url string) string {
 
 func checkAvailableStreams(s Schedule) {
 
-	for _, g := range s.Games {
+	streams = make(map[string]Stream)
+
+	for i, g := range s.Games {
+		gs := make(map[string]Stream)
 
 		if !isActiveGame(g.GameStatus.DetailedState) {
 			continue
@@ -56,11 +59,13 @@ func checkAvailableStreams(s Schedule) {
 					var si = new(Stream)
 					si.ID = strconv.Itoa(item.ID)
 					si.StreamURL = fmt.Sprintf(config.StreamPlaylistURL, s.Date, strconv.Itoa(item.ID), config.CDN)
+					si.MediaFeedType = item.MediaFeedType
+					si.CallLetters = item.CallLetters
 
 					if si.StreamURL != "" {
 						si.StreamPlaylist = getM3U8Url(si.StreamURL)
 						if si.StreamPlaylist != "" {
-							g.Streams[si.ID] = *si
+							gs[si.ID] = *si
 							streams[si.ID] = *si
 						}
 					}
@@ -68,6 +73,9 @@ func checkAvailableStreams(s Schedule) {
 
 			}
 		}
+
+		s.Games[i].Streams = gs
+
 	}
 
 }
