@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"time"
 )
 
 var proxyCmd *exec.Cmd
@@ -17,8 +16,6 @@ func startProxy() {
 		return
 	}
 
-	fmt.Print("Starting proxy...")
-
 	proxyCmd = exec.Command(config.Proxy.Path, "-d", config.Proxy.Domain, "-p", strconv.Itoa(config.Proxy.Port), "-s", config.Proxy.SourceDomains)
 	//proxyCmd = exec.Command(proxyPath, "-debug", "-d", config.Proxy.Domain, "-p", config.Proxy.Port, "-s", config.Proxy.SourceDomains)
 	proxyCmd.Env = os.Environ()
@@ -27,16 +24,15 @@ func startProxy() {
 		log.Fatal("Unable to start proxy: ", err)
 	}
 
-	// sleep to ensure started before stream
-	time.Sleep(2 * time.Second)
+	fmt.Println("Proxy started.")
 
 }
 
 func stopProxy() {
 	if proxyCmd != nil {
-		fmt.Println("Stopping proxy...")
 		if err := proxyCmd.Process.Kill(); err != nil {
 			log.Fatal("Unable to stop proxy process: ", err)
 		}
+		fmt.Println("Proxy stopped.")
 	}
 }

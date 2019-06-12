@@ -156,9 +156,7 @@ func startStream(streamID string) {
 	if !ok {
 		fmt.Println("Stream doesn't exist.")
 	} else {
-		startProxy()
 		runStreamlink(i)
-		stopProxy()
 	}
 }
 
@@ -175,6 +173,8 @@ func run(c *cli.Context) {
 	if !config.CheckStreams {
 		exit()
 	}
+
+	startProxy()
 
 	if len(streams) == 0 {
 		fmt.Println("No streams available.")
