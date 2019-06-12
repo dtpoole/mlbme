@@ -124,7 +124,7 @@ func displayGames(s Schedule, team string) {
 
 			var v []string
 
-			if config.CheckStreams {
+			if config.CheckStreams && len(streams) > 0 {
 				v = []string{getTeamDisplay(g.Teams, false), getGameScoreDisplay(g), getGameStatusDisplay(g), getStreamDisplay(g)}
 			} else {
 				v = []string{getTeamDisplay(g.Teams, false), getGameScoreDisplay(g), getGameStatusDisplay(g)}
