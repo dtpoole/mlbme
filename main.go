@@ -158,7 +158,13 @@ func startStream(streamID string) {
 	} else {
 		startProxy()
 		runStreamlink(i)
+		stopProxy()
 	}
+}
+
+func exit() {
+	stopProxy()
+	os.Exit(0)
 }
 
 func run(c *cli.Context) {
@@ -167,7 +173,7 @@ func run(c *cli.Context) {
 	refresh(c.String("team"))
 
 	if !config.CheckStreams {
-		os.Exit(0)
+		exit()
 	}
 
 	if len(streams) == 0 {
@@ -176,7 +182,7 @@ func run(c *cli.Context) {
 
 	if c.String("stream") != "" {
 		startStream(c.String("stream"))
-		os.Exit(0)
+		exit()
 	}
 
 	for {
@@ -188,7 +194,7 @@ func run(c *cli.Context) {
 		input = strings.TrimSpace(input)
 
 		if input == "q" {
-			os.Exit(0)
+			exit()
 		} else if input == "r" {
 			refresh("")
 		} else {

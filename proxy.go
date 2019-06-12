@@ -13,7 +13,11 @@ var proxyCmd *exec.Cmd
 
 func startProxy() {
 
-	fmt.Println("Starting proxy...")
+	if proxyCmd != nil {
+		return
+	}
+
+	fmt.Print("Starting proxy...")
 
 	proxyCmd = exec.Command(config.Proxy.Path, "-d", config.Proxy.Domain, "-p", strconv.Itoa(config.Proxy.Port), "-s", config.Proxy.SourceDomains)
 	//proxyCmd = exec.Command(proxyPath, "-debug", "-d", config.Proxy.Domain, "-p", config.Proxy.Port, "-s", config.Proxy.SourceDomains)
@@ -29,8 +33,10 @@ func startProxy() {
 }
 
 func stopProxy() {
-	fmt.Println("Stopping proxy...")
-	if err := proxyCmd.Process.Kill(); err != nil {
-		log.Fatal("Unable to stop proxy process: ", err)
+	if proxyCmd != nil {
+		fmt.Println("Stopping proxy...")
+		if err := proxyCmd.Process.Kill(); err != nil {
+			log.Fatal("Unable to stop proxy process: ", err)
+		}
 	}
 }
