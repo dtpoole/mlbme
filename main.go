@@ -152,13 +152,13 @@ func refresh(team string) {
 	displayGames(s, team)
 }
 
-func startStream(streamID string) {
+func startStream(streamID string, http bool) {
 
 	i, ok := streams[streamID]
 	if !ok {
 		fmt.Println("Stream doesn't exist.")
 	} else {
-		runStreamlink(i)
+		runStreamlink(i, http)
 	}
 }
 
@@ -184,7 +184,7 @@ func run(c *cli.Context) {
 	}
 
 	if c.String("stream") != "" {
-		startStream(c.String("stream"))
+		startStream(c.String("stream"), c.Bool("http"))
 		exit()
 	}
 
@@ -203,7 +203,7 @@ func run(c *cli.Context) {
 		} else if input == "h" {
 			fmt.Println("[streamId] = play stream\nr = refresh\nq = quit")
 		} else {
-			startStream(input)
+			startStream(input, c.Bool("http"))
 		}
 
 	}
@@ -231,6 +231,10 @@ func main() {
 			Name:  "stream, s",
 			Value: "",
 			Usage: "Stream ID to stream",
+		},
+		cli.BoolFlag{
+			Name:  "http",
+			Usage: "Tell VLC to use HTTP streaming instead of playing locally",
 		},
 	}
 
