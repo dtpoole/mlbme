@@ -15,16 +15,11 @@ func runStreamlink(s Stream) {
 
 	ua := "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
 
-	streamlinkPath, lookErr := exec.LookPath("streamlink")
-	if lookErr != nil {
-		panic(lookErr)
-	}
-
 	log.Println("Starting streamlink...")
 
 	streamlinkCmd = exec.Command(streamlinkPath, fmt.Sprintf("hlsvariant://%s name_key=bitrate verify=False", s.StreamPlaylist),
 		"best", "--http-header", fmt.Sprintf("\"%s\"", ua), "--hls-segment-threads=4", "--https-proxy", "127.0.0.1:"+strconv.Itoa(config.Proxy.Port),
-		"--player", config.VLC.Path)
+		"--player", vlcPath)
 
 	streamlinkCmd.Env = os.Environ()
 

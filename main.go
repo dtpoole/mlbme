@@ -14,9 +14,11 @@ import (
 )
 
 var (
-	config  configuration
-	streams map[string]Stream
-	s       Schedule
+	config         configuration
+	streams        map[string]Stream
+	s              Schedule
+	streamlinkPath string
+	vlcPath        string
 )
 
 const version = "1.0"
@@ -174,6 +176,7 @@ func run(c *cli.Context) {
 		exit()
 	}
 
+	checkDependencies()
 	startProxy()
 
 	if len(streams) == 0 {

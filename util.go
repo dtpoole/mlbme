@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"time"
 )
 
@@ -18,10 +20,6 @@ type configuration struct {
 		Domain        string `json:"domain"`
 		SourceDomains string `json:"sourceDomains"`
 	} `json:"proxy"`
-	VLC struct {
-		Path string `json:"path"`
-		Args string `json:"args"`
-	} `json:"vlc"`
 }
 
 func loadConfiguration(file string) configuration {
@@ -57,4 +55,30 @@ func getJSON(url string, target interface{}) error {
 	defer r.Body.Close()
 
 	return json.NewDecoder(r.Body).Decode(target)
+}
+
+func checkDependencies() {
+
+	var error error
+
+	streamlinkPath, error = exec.LookPath("streamlink")
+	if error != nil {
+		panic("Unable to find streamlink")
+	}
+
+	vlcPaths := []string{"vlc", "cvlc", "/Applications/VLC.app/Contents/MacOS/VLC", "~/Applications/VLC.app/Contents/MacOS/VLC"}
+
+	for _, p := range vlcPaths {
+		vlcPath, error = exec.LookPath(p)
+		if error == nil {
+			break
+		}
+	}
+
+	if vlcPath == "" {
+		panic("Unable to find VLC")
+	}
+
+	log.Println("Using: streamlink =", streamlinkPath, "", "VLC =", vlcPath)
+
 }
