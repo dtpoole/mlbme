@@ -2,11 +2,8 @@ FROM golang as builder
 ENV GO111MODULE=on
 WORKDIR /go/src/github.com/dtpoole/mlbme
 COPY *.go go.mod go.sum  ./
-COPY config.json  ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mlbme .
 
-
-FROM golang as proxy-builder
 WORKDIR /go/src/go-mlbam-proxy
 RUN git clone https://github.com/jwallet/go-mlbam-proxy.git ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o go-mlbam-proxy .
@@ -22,15 +19,18 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repos
     apk upgrade --no-cache musl ;
 RUN chmod +x /entrypoint.sh; /entrypoint.sh \
   -p streamlink \
+  -a bash \
   -a vlc \
-  -a tzdata \
   && echo
+RUN find /usr/local/lib/pyenv/versions/*/ -depth \( -name '*.pyo' -o -name '*.pyc' -o -name 'test' -o -name 'tests' \) -exec rm -rf '{}' + ;
 RUN ln -s /usr/local/lib/pyenv/versions/*/bin/streamlink /usr/local/bin
 
+WORKDIR /app
+
+COPY --from=builder /go/src/go-mlbam-proxy/go-mlbam-proxy /usr/local/bin
 COPY --from=builder /go/src/github.com/dtpoole/mlbme/mlbme .
-COPY --from=builder /go/src/github.com/dtpoole/mlbme/config.json .
-COPY --from=proxy-builder /go/src/go-mlbam-proxy/go-mlbam-proxy /usr/local/bin
+COPY config.json  ./
 
 USER $USER
 
-ENTRYPOINT [ "/mlbme" ]
+ENTRYPOINT [ "./mlbme" ]
