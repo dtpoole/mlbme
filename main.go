@@ -19,6 +19,7 @@ var (
 	s              Schedule
 	streamlinkPath string
 	vlcPath        string
+	proxyPath      string
 )
 
 const version = "1.0"
