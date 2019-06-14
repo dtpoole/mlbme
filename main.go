@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -42,6 +43,7 @@ func isActiveGame(state string) bool {
 		"Pre-Game",
 		"Postponed",
 		"Scheduled",
+		"Suspended: Rain",
 		"Game Over",
 		"Final":
 		return false
@@ -57,6 +59,11 @@ func isCompleteGame(state string) bool {
 		return true
 	}
 	return false
+}
+
+func isSuspendedGame(state string) bool {
+	x, _ := regexp.Match(`^Suspended*`, []byte(state))
+	return x
 }
 
 func getTeamDisplay(teams Teams, singleLine bool) string {
@@ -95,6 +102,10 @@ func getGameStatusDisplay(g Game) string {
 		sd.WriteString(timeFormat(t))
 	} else {
 		sd.WriteString(strings.ToUpper(g.LineScore.InningState[0:3]) + " " + g.LineScore.CurrentInningOrdinal)
+
+		if isSuspendedGame(g.GameStatus.DetailedState) {
+			sd.WriteString("\n" + g.GameStatus.DetailedState)
+		}
 	}
 
 	return sd.String()
