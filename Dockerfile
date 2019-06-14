@@ -1,6 +1,6 @@
 FROM golang as builder
+ENV GO111MODULE=on
 WORKDIR /go/src/github.com/dtpoole/mlbme
-RUN go get -d -v github.com/olekukonko/tablewriter github.com/urfave/cli
 COPY *.go go.mod go.sum  ./
 COPY config.json  ./
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mlbme .
