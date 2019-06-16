@@ -15,12 +15,13 @@ import (
 )
 
 var (
-	config         configuration
-	streams        map[string]Stream
-	s              Schedule
-	streamlinkPath string
-	vlcPath        string
-	proxyPath      string
+	config             configuration
+	streams            map[string]Stream
+	s                  Schedule
+	streamlinkPath     string
+	vlcPath            string
+	proxyPath          string
+	currentlyPlayingID string
 )
 
 const version = "1.0"
