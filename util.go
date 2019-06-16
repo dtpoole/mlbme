@@ -61,6 +61,11 @@ func checkDependencies() {
 
 	var error error
 
+	proxyPath, error = exec.LookPath("go-mlbam-proxy")
+	if error != nil {
+		panic("Unable to find proxy")
+	}
+
 	streamlinkPath, error = exec.LookPath("streamlink")
 	if error != nil {
 		panic("Unable to find streamlink")
@@ -79,6 +84,6 @@ func checkDependencies() {
 		panic("Unable to find VLC")
 	}
 
-	log.Println("Using: streamlink =", streamlinkPath, "", "VLC =", vlcPath)
+	log.Println("Using: streamlink =", streamlinkPath, "", "VLC =", vlcPath, "", "proxy =", proxyPath)
 
 }
