@@ -12,3 +12,6 @@
 *.out
 
 mlbme
+go-mlbam-proxy*
+
+.DS_Store
