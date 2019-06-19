@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
 	"strconv"
 	"time"
 )
@@ -17,7 +16,8 @@ func runStreamlink(s Stream, http bool) {
 
 	vlc := vlcPath
 
-	if http {
+	if http || match("cvlc", vlcPath) {
+		log.Println("HTTP streaming enabled.")
 		vlc = vlc + " --sout '#standard{access=http,mux=ts,dst=:6789}'"
 	}
 
@@ -47,9 +47,8 @@ func runStreamlink(s Stream, http bool) {
 		m := scanner.Text()
 
 		// check for error opening commerical break stream. if it occurs, sleep for 60 seconds and restart stream.
-		x, _ := regexp.MatchString("Unable to open URL", m)
-
-		if x {
+		// TODO: check to see if streamlink can handle this
+		if match("Unable to open URL", m) {
 			log.Println("ERROR: Unable to open URL. Will reopen stream in 60 secs")
 			streamlinkCmd.Process.Kill()
 			time.Sleep(60 * time.Second)
