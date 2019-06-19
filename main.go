@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -17,21 +16,28 @@ import (
 var (
 	config             configuration
 	streams            map[string]Stream
-	s                  Schedule
+	schedule           Schedule
 	streamlinkPath     string
 	vlcPath            string
 	proxyPath          string
 	currentlyPlayingID string
+	team               string
 )
 
-const version = "1.0"
+// consts
+const (
+	NLINE   = "\n"
+	VERSION = "1.0"
+)
 
 func hasGameStarted(state string) bool {
 	switch state {
 	case
 		"Scheduled",
 		"Postponed",
-		"Pre-Game":
+		"Pre-Game",
+		"Warmup",
+		"Delayed Start: Rain":
 		return false
 	}
 	return true
@@ -41,15 +47,11 @@ func hasGameStarted(state string) bool {
 func isActiveGame(state string) bool {
 	switch state {
 	case
-		"Pre-Game",
-		"Postponed",
-		"Scheduled",
-		"Suspended: Rain",
-		"Game Over",
-		"Final":
-		return false
+		"In Progress",
+		"Warmup":
+		return true
 	}
-	return true
+	return false
 }
 
 func isCompleteGame(state string) bool {
@@ -62,17 +64,7 @@ func isCompleteGame(state string) bool {
 	return false
 }
 
-func isSuspendedGame(state string) bool {
-	x, _ := regexp.Match(`^Suspended*`, []byte(state))
-	return x
-}
-
-func getTeamDisplay(teams Teams, singleLine bool) string {
-
-	if singleLine {
-		return teams.Away.Team.Name + " (" + teams.Away.Team.Abbreviation + ") vs " + teams.Home.Team.Name + " (" + teams.Home.Team.Abbreviation + ")"
-	}
-
+func getTeamDisplay(teams Teams) string {
 	return teams.Away.Team.Name + " (" + teams.Away.Team.Abbreviation + ")\n" + teams.Home.Team.Name + " (" + teams.Home.Team.Abbreviation + ")"
 }
 
@@ -96,20 +88,20 @@ func getGameStatusDisplay(g Game) string {
 
 	var sd strings.Builder
 
-	if g.GameStatus.DetailedState == "Warmup" || g.GameStatus.DetailedState == "Postponed" || g.GameStatus.DetailedState == "Final" || g.GameStatus.DetailedState == "Game Over" {
-		sd.WriteString(g.GameStatus.DetailedState)
-	} else if !hasGameStarted(g.GameStatus.DetailedState) {
+	if g.GameStatus.StatusCode == "I" {
+		sd.WriteString(strings.ToUpper(g.LineScore.InningState[0:3]) + " " + g.LineScore.CurrentInningOrdinal)
+	} else if g.GameStatus.StatusCode == "S" || g.GameStatus.StatusCode == "P" {
 		t, _ := time.Parse(time.RFC3339, g.GameDate)
 		sd.WriteString(timeFormat(t))
-	} else {
-		sd.WriteString(strings.ToUpper(g.LineScore.InningState[0:3]) + " " + g.LineScore.CurrentInningOrdinal)
-
-		if isSuspendedGame(g.GameStatus.DetailedState) {
-			sd.WriteString("\n" + g.GameStatus.DetailedState)
-		}
+	} else if match(`^P*`, g.GameStatus.StatusCode) || g.GameStatus.StatusCode == "DR" {
+		sd.WriteString(g.GameStatus.DetailedState)
 	}
 
-	return sd.String()
+	if match("^Suspended*", g.GameStatus.DetailedState) {
+		sd.WriteString("\n" + g.GameStatus.DetailedState)
+	}
+
+	return strings.TrimSpace(sd.String())
 
 }
 
@@ -124,30 +116,70 @@ func getGameScoreDisplay(g Game) string {
 	return scoreDisplay
 }
 
-func displayGames(s Schedule, team string) {
+func showStreams() bool {
+	if config.CheckStreams && len(streams) > 0 {
+		return true
+	}
+	return false
+}
+
+func displayGames() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetRowLine(true)
-	table.SetColMinWidth(0, 20)
 
-	for _, g := range s.Games {
+	var v []string
+	var total = 0
+	showScore := false
 
-		if team != "" && (g.Teams.Away.Team.Abbreviation != team && g.Teams.Home.Team.Abbreviation != team) {
+	if schedule.CompletedGames || schedule.TotalGamesInProgress > 0 {
+		showScore = true
+	}
+
+	for i, g := range schedule.Games {
+
+		col := i % 2
+
+		if !empty(team) && (g.Teams.Away.Team.Abbreviation != team && g.Teams.Home.Team.Abbreviation != team) {
 			continue
 		}
 
-		if !isCompleteGame(g.GameStatus.DetailedState) {
+		v = append(v, getTeamDisplay(g.Teams))
 
-			var v []string
-
-			if config.CheckStreams && len(streams) > 0 {
-				v = []string{getTeamDisplay(g.Teams, false), getGameScoreDisplay(g), getGameStatusDisplay(g), getStreamDisplay(g)}
-			} else {
-				v = []string{getTeamDisplay(g.Teams, false), getGameScoreDisplay(g), getGameStatusDisplay(g)}
-			}
-
-			table.Append(v)
+		if showScore {
+			v = append(v, getGameScoreDisplay(g))
 		}
 
+		v = append(v, getGameStatusDisplay(g))
+
+		if showStreams() {
+			v = append(v, getStreamDisplay(g))
+		}
+
+		if col == 0 {
+			if empty(team) {
+				v = append(v, NLINE)
+			}
+		} else {
+			table.Append(v)
+			v = []string{}
+		}
+
+		total = total + 1
+
+	}
+
+	// uneven game count
+	if total == 1 && len(v) > 0 {
+		table.Append(v)
+	} else if len(v) > 0 {
+		pad := []string{NLINE, NLINE}
+		if showScore {
+			pad = append(pad, NLINE)
+		}
+		if showStreams() {
+			pad = append(pad, NLINE)
+		}
+		table.Append(append(v, pad...))
 	}
 
 	if table.NumLines() > 0 {
@@ -155,14 +187,14 @@ func displayGames(s Schedule, team string) {
 	}
 }
 
-func refresh(team string) {
-	s = GetMLBSchedule()
+func refresh() {
+	schedule = GetMLBSchedule()
 
 	if config.CheckStreams {
-		checkAvailableStreams(s)
+		checkAvailableStreams()
 	}
 
-	displayGames(s, team)
+	displayGames()
 }
 
 func startStream(streamID string, http bool) {
@@ -180,10 +212,25 @@ func exit() {
 	os.Exit(0)
 }
 
+func prompt() string {
+
+	var prompt string
+	reader := bufio.NewReader(os.Stdin)
+
+	prompt = prompt + ">> "
+
+	fmt.Print(prompt)
+	input, _ := reader.ReadString('\n')
+
+	return strings.TrimSpace(input)
+}
+
 func run(c *cli.Context) {
 
+	team = c.String("team")
+
 	config = loadConfiguration(c.String("config"))
-	refresh(c.String("team"))
+	refresh()
 
 	if !config.CheckStreams {
 		exit()
@@ -203,16 +250,12 @@ func run(c *cli.Context) {
 
 	for {
 
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print(">> ")
-		input, _ := reader.ReadString('\n')
-
-		input = strings.TrimSpace(input)
+		input := prompt()
 
 		if input == "q" {
 			exit()
 		} else if input == "r" {
-			refresh("")
+			refresh()
 		} else if input == "h" {
 			fmt.Println("[streamId] = play stream\nr = refresh\nq = quit")
 		} else {
@@ -227,7 +270,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "mlbme"
 	app.Usage = "stream MLB games"
-	app.Version = version
+	app.Version = VERSION
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

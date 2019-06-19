@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"time"
 )
 
@@ -41,7 +42,8 @@ func loadConfiguration(file string) configuration {
 
 func timeFormat(x time.Time) string {
 	location, _ := time.LoadLocation("Local")
-	return x.In(location).Format("2006-01-02 3:04PM")
+	//return x.In(location).Format("2006-01-02 3:04PM")
+	return x.In(location).Format("3:04PM")
 }
 
 func getJSON(url string, target interface{}) error {
@@ -55,6 +57,18 @@ func getJSON(url string, target interface{}) error {
 	defer r.Body.Close()
 
 	return json.NewDecoder(r.Body).Decode(target)
+}
+
+func empty(in string) bool {
+	if in == "" {
+		return true
+	}
+	return false
+}
+
+func match(pattern string, in string) bool {
+	m, _ := regexp.MatchString(pattern, in)
+	return m
 }
 
 func checkDependencies() {

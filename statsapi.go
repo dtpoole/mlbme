@@ -59,6 +59,7 @@ type Game struct {
 	Teams      Teams `json:"teams"`
 	GameStatus struct {
 		DetailedState string `json:"detailedState"`
+		StatusCode    string `json:"statusCode"`
 	} `json:"status"`
 	GameDate string `json:"gameDate"`
 	Content  struct {
@@ -89,6 +90,7 @@ type Schedule struct {
 	URL                  string
 	TotalGames           int
 	TotalGamesInProgress int
+	CompletedGames       bool
 	Games                []Game
 }
 
@@ -122,6 +124,13 @@ func GetMLBSchedule() Schedule {
 	s.TotalGames = d.Dates[0].TotalGames
 	s.TotalGamesInProgress = d.Dates[0].TotalGamesInProgress
 	s.Games = d.Dates[0].Games
+
+	for _, g := range s.Games {
+		if isCompleteGame(g.GameStatus.DetailedState) {
+			s.CompletedGames = true
+			break
+		}
+	}
 
 	return *s
 }
