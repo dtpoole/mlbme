@@ -51,11 +51,11 @@ func getStreamPlaylist(date string, id int) string {
 	return ""
 }
 
-func checkAvailableStreams(s Schedule) {
+func checkAvailableStreams() {
 
 	streams = make(map[string]Stream)
 
-	for i, g := range s.Games {
+	for i, g := range schedule.Games {
 		gs := make(map[string]Stream)
 
 		if !isActiveGame(g.GameStatus.DetailedState) {
@@ -70,7 +70,7 @@ func checkAvailableStreams(s Schedule) {
 			for _, item := range epg.MediaItems {
 				if item.MediaState == "MEDIA_ON" {
 
-					streamPlaylist := getStreamPlaylist(s.Date, item.ID)
+					streamPlaylist := getStreamPlaylist(schedule.Date, item.ID)
 
 					if streamPlaylist != "" {
 						var si = new(Stream)
@@ -87,7 +87,7 @@ func checkAvailableStreams(s Schedule) {
 			}
 		}
 
-		s.Games[i].Streams = gs
+		schedule.Games[i].Streams = gs
 
 	}
 

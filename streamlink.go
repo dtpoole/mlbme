@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
+	"time"
 )
 
 var streamlinkCmd *exec.Cmd
@@ -36,10 +38,23 @@ func runStreamlink(s Stream, http bool) {
 	if err := streamlinkCmd.Start(); err != nil {
 		log.Fatal("Unable to start streamlink: ", err)
 	}
+
+	currentlyPlayingID = s.ID
+
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		m := scanner.Text()
+
+		// check for error opening commerical break stream. if it occurs, sleep for 60 seconds and restart stream.
+		x, _ := regexp.MatchString("Unable to open URL", m)
+
+		if x {
+			log.Println("ERROR: Unable to open URL. Will reopen stream in 60 secs")
+			streamlinkCmd.Process.Kill()
+			time.Sleep(60 * time.Second)
+			runStreamlink(s, http)
+		}
 		log.Println(m)
 	}
 

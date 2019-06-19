@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"time"
 )
 
@@ -41,7 +42,8 @@ func loadConfiguration(file string) configuration {
 
 func timeFormat(x time.Time) string {
 	location, _ := time.LoadLocation("Local")
-	return x.In(location).Format("2006-01-02 3:04PM")
+	//return x.In(location).Format("2006-01-02 3:04PM")
+	return x.In(location).Format("3:04PM")
 }
 
 func getJSON(url string, target interface{}) error {
@@ -57,21 +59,33 @@ func getJSON(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
+func empty(in string) bool {
+	if in == "" {
+		return true
+	}
+	return false
+}
+
+func match(pattern string, in string) bool {
+	m, _ := regexp.MatchString(pattern, in)
+	return m
+}
+
 func checkDependencies() {
 
 	var error error
 
 	proxyPath, error = exec.LookPath("go-mlbam-proxy")
 	if error != nil {
-		panic("Unable to find proxy")
+		log.Fatal("ERROR: Unable to find proxy.")
 	}
 
 	streamlinkPath, error = exec.LookPath("streamlink")
 	if error != nil {
-		panic("Unable to find streamlink")
+		log.Fatal("ERROR: Unable to find streamlink.")
 	}
 
-	vlcPaths := []string{"vlc", "cvlc", "/Applications/VLC.app/Contents/MacOS/VLC", "~/Applications/VLC.app/Contents/MacOS/VLC"}
+	vlcPaths := []string{"cvlc", "vlc", "/Applications/VLC.app/Contents/MacOS/VLC", "~/Applications/VLC.app/Contents/MacOS/VLC"}
 
 	for _, p := range vlcPaths {
 		vlcPath, error = exec.LookPath(p)
@@ -81,7 +95,7 @@ func checkDependencies() {
 	}
 
 	if vlcPath == "" {
-		panic("Unable to find VLC")
+		log.Fatal("ERROR: Unable to find VLC.")
 	}
 
 	log.Println("Using: streamlink =", streamlinkPath, "", "VLC =", vlcPath, "", "proxy =", proxyPath)
