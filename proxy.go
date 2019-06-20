@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strconv"
 )
 
 var proxyCmd *exec.Cmd
@@ -15,7 +14,7 @@ func startProxy() {
 		return
 	}
 
-	proxyCmd = exec.Command(proxyPath, "-d", config.Proxy.Domain, "-p", strconv.Itoa(config.Proxy.Port), "-s", config.Proxy.SourceDomains)
+	proxyCmd = exec.Command(proxyPath, "-d", config.Proxy.Domain, "-p", "9876", "-s", config.Proxy.SourceDomains)
 	proxyCmd.Env = os.Environ()
 
 	if err := proxyCmd.Start(); err != nil {
