@@ -92,7 +92,7 @@ func getGameStatusDisplay(g Game) string {
 		sd.WriteString(strings.ToUpper(g.LineScore.InningState[0:3]) + " " + g.LineScore.CurrentInningOrdinal)
 	} else if g.GameStatus.StatusCode == "S" || g.GameStatus.StatusCode == "P" {
 		t, _ := time.Parse(time.RFC3339, g.GameDate)
-		sd.WriteString(timeFormat(t))
+		sd.WriteString(timeFormat(t, false))
 	} else if match(`^P*`, g.GameStatus.StatusCode) || g.GameStatus.StatusCode == "DR" {
 		sd.WriteString(g.GameStatus.DetailedState)
 	}
@@ -134,6 +134,8 @@ func displayGames() {
 	if schedule.CompletedGames || schedule.TotalGamesInProgress > 0 {
 		showScore = true
 	}
+
+	fmt.Println("Scoreboard: ", timeFormat(time.Now(), true))
 
 	for i, g := range schedule.Games {
 

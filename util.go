@@ -16,8 +16,6 @@ type configuration struct {
 	StreamPlaylistURL string `json:"streamPlaylistURL"`
 	CheckStreams      bool   `json:"checkStreams"`
 	Proxy             struct {
-		Path          string `json:"path"`
-		Port          int    `json:"port"`
 		Domain        string `json:"domain"`
 		SourceDomains string `json:"sourceDomains"`
 	} `json:"proxy"`
@@ -40,9 +38,11 @@ func loadConfiguration(file string) configuration {
 	return config
 }
 
-func timeFormat(x time.Time) string {
+func timeFormat(x time.Time, showDate bool) string {
 	location, _ := time.LoadLocation("Local")
-	//return x.In(location).Format("2006-01-02 3:04PM")
+	if showDate {
+		return x.In(location).Format("2006-01-02 3:04PM")
+	}
 	return x.In(location).Format("3:04PM")
 }
 
