@@ -92,18 +92,35 @@ func checkDependencies() {
 
 	var error error
 
-	proxyPath, error = exec.LookPath("go-mlbam-proxy")
-	if error != nil {
-		log.Fatal("ERROR: Unable to find proxy.")
+	if !config.CheckStreams {
+		return
 	}
 
-	streamlinkPath, error = exec.LookPath("streamlink")
-	if error != nil {
-		log.Fatal("ERROR: Unable to find streamlink.")
+	proxyPaths := []string{"go-mlbam-proxy", "/usr/local/bin/go-mlbam-proxy"}
+	for _, p := range proxyPaths {
+		proxyPath, error = exec.LookPath(p)
+		if error == nil {
+			break
+		}
+	}
+
+	if empty(proxyPath) {
+		log.Fatal("ERROR: Unable to find go-mlbam-proxy in path.")
+	}
+
+	streamlinkPaths := []string{"streamlink", "/usr/local/bin/streamlink"}
+	for _, p := range streamlinkPaths {
+		streamlinkPath, error = exec.LookPath(p)
+		if error == nil {
+			break
+		}
+	}
+
+	if empty(streamlinkPath) {
+		log.Fatal("ERROR: Unable to find streamlink in path.")
 	}
 
 	vlcPaths := []string{"cvlc", "vlc", "/Applications/VLC.app/Contents/MacOS/VLC", "~/Applications/VLC.app/Contents/MacOS/VLC"}
-
 	for _, p := range vlcPaths {
 		vlcPath, error = exec.LookPath(p)
 		if error == nil {
@@ -111,10 +128,10 @@ func checkDependencies() {
 		}
 	}
 
-	if vlcPath == "" {
-		log.Fatal("ERROR: Unable to find VLC.")
+	if empty(vlcPath) {
+		log.Fatal("ERROR: Unable to find VLC in path.")
 	}
 
-	log.Println("Using: streamlink =", streamlinkPath, "", "VLC =", vlcPath, "", "proxy =", proxyPath)
+	log.Println("streamlink =", streamlinkPath, "", "VLC =", vlcPath, "", "proxy =", proxyPath)
 
 }

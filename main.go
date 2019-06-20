@@ -197,6 +197,10 @@ func refresh() {
 	}
 
 	displayGames()
+
+	if config.CheckStreams && len(streams) == 0 {
+		fmt.Println("No streams available.")
+	}
 }
 
 func startStream(streamID string, http bool) {
@@ -232,17 +236,14 @@ func run(c *cli.Context) {
 	team = c.String("team")
 
 	config = loadConfiguration(c.String("config"))
-	refresh()
-
-	if !config.CheckStreams {
-		exit()
-	}
 
 	checkDependencies()
 	startProxy()
 
-	if len(streams) == 0 {
-		fmt.Println("No streams available.")
+	refresh()
+
+	if !config.CheckStreams {
+		exit()
 	}
 
 	if c.String("stream") != "" {
