@@ -35,6 +35,23 @@ func loadConfiguration(file string) configuration {
 	}
 	jsonParser := json.NewDecoder(configFile)
 	jsonParser.Decode(&config)
+
+	if empty(config.StatsURL) {
+		log.Fatal("ERROR: Please set statsURL in configuration file.")
+	}
+
+	if config.CheckStreams {
+		if empty(config.StreamPlaylistURL) {
+			log.Fatal("ERROR: Please set streamPlaylistURL in configuration file.")
+		}
+		if empty(config.Proxy.Domain) {
+			log.Fatal("ERROR: Please set proxy domain in configuration file.")
+		}
+		if empty(config.Proxy.SourceDomains) {
+			log.Fatal("ERROR: Please set source domains in configuration file.")
+		}
+	}
+
 	return config
 }
 
