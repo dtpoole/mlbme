@@ -7,9 +7,7 @@ import (
 
 // Score represents line score for team
 type Score struct {
-	Runs   int `json:"runs"`
-	Hits   int `json:"hits"`
-	Errors int `json:"errors"`
+	Runs int `json:"runs"`
 }
 
 // Scoring holds Home and Away team line score
@@ -20,7 +18,6 @@ type Scoring struct {
 
 // LineScore contains information about the current state of the game
 type LineScore struct {
-	CurrentInning        int     `json:"currentInning"`
 	CurrentInningOrdinal string  `json:"currentInningOrdinal"`
 	InningState          string  `json:"inningState"`
 	Scoring              Scoring `json:"teams"`
@@ -29,7 +26,6 @@ type LineScore struct {
 // Team details
 type Team struct {
 	Name         string `json:"teamName"`
-	FullName     string `json:"name"`
 	Abbreviation string `json:"abbreviation"`
 }
 
@@ -46,9 +42,7 @@ type Teams struct {
 // MediaItem contains media available for the game
 type MediaItem struct {
 	ID            int    `json:"id"`
-	MediaID       string `json:"mediaId"`
 	MediaState    string `json:"mediaState"`
-	ContentID     string `json:"contentId"`
 	MediaFeedType string `json:"mediaFeedType"`
 	CallLetters   string `json:"callLetters"`
 }
