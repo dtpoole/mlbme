@@ -10,7 +10,7 @@ var proxyCmd *exec.Cmd
 
 func startProxy() {
 
-	if proxyCmd != nil {
+	if !config.CheckStreams || proxyCmd != nil {
 		return
 	}
 

@@ -15,7 +15,7 @@ import (
 
 var (
 	config             configuration
-	streams            map[string]Stream
+	streams            map[int]map[string]Stream
 	schedule           Schedule
 	streamlinkPath     string
 	vlcPath            string
@@ -70,13 +70,13 @@ func getTeamDisplay(teams Teams) string {
 
 func getStreamDisplay(g Game) string {
 
-	if len(g.Streams) == 0 || !isActiveGame(g.GameStatus.DetailedState) {
+	if len(streams[g.GamePk]) == 0 || !isActiveGame(g.GameStatus.DetailedState) {
 		return "\n"
 	}
 
 	var streamDisplay strings.Builder
 
-	for _, s := range g.Streams {
+	for _, s := range streams[g.GamePk] {
 		streamDisplay.WriteString(s.MediaFeedType + " (" + s.CallLetters + ") [" + s.ID + "]\n")
 	}
 
@@ -131,13 +131,13 @@ func displayGames() {
 	var total = 0
 	showScore := false
 
-	if schedule.CompletedGames || schedule.TotalGamesInProgress > 0 {
+	if schedule.CompletedGames || *schedule.TotalGamesInProgress > 0 {
 		showScore = true
 	}
 
 	fmt.Println("Scoreboard: ", timeFormat(time.Now(), true))
 
-	for i, g := range schedule.Games {
+	for i, g := range *schedule.Games {
 
 		col := i % 2
 
@@ -201,16 +201,26 @@ func refresh() {
 	if config.CheckStreams && len(streams) == 0 {
 		fmt.Println("No streams available.")
 	}
+
 }
 
 func startStream(streamID string, http bool) {
 
-	i, ok := streams[streamID]
-	if !ok {
-		fmt.Println("Stream doesn't exist.")
-	} else {
-		runStreamlink(i, http)
+	var gamePk int
+
+	for g, gs := range streams {
+		if _, ok := gs[streamID]; ok {
+			gamePk = g
+			break
+		}
 	}
+
+	if stream, ok := streams[gamePk][streamID]; ok {
+		runStreamlink(stream, http)
+	} else {
+		fmt.Println("Stream doesn't exist.")
+	}
+
 }
 
 func exit() {

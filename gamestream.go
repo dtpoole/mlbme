@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 func getM3U8Url(url string) string {
@@ -37,58 +38,70 @@ func getM3U8Url(url string) string {
 
 }
 
-func getStreamPlaylist(date string, id int) string {
+func getGameStreams(g Game, ch chan Stream, wg *sync.WaitGroup) {
 
 	cdns := [2]string{"akc", "l3c"}
 
-	for _, cdn := range cdns {
-		streamURL := fmt.Sprintf(config.StreamPlaylistURL, date, strconv.Itoa(id), cdn)
-		playlist := getM3U8Url(streamURL)
-		if playlist != "" {
-			return playlist
+	for _, epg := range g.Content.Media.EPG {
+		if epg.Title != "MLBTV" {
+			continue
+		}
+
+		for _, item := range epg.MediaItems {
+			if item.MediaState == "MEDIA_ON" {
+
+				playlist := ""
+
+				for _, cdn := range cdns {
+					streamURL := fmt.Sprintf(config.StreamPlaylistURL, schedule.Date, strconv.Itoa(item.ID), cdn)
+					playlist = getM3U8Url(streamURL)
+					if playlist != "" {
+						break
+					}
+				}
+
+				if playlist != "" {
+					s := Stream{
+						ID:             strconv.Itoa(item.ID),
+						GamePk:         g.GamePk,
+						MediaFeedType:  item.MediaFeedType,
+						CallLetters:    item.CallLetters,
+						StreamPlaylist: playlist,
+					}
+
+					ch <- s
+				}
+			}
 		}
 	}
-	return ""
+
+	wg.Done()
+
 }
 
 func checkAvailableStreams() {
 
-	streams = make(map[string]Stream)
+	var wg sync.WaitGroup
 
-	for i, g := range schedule.Games {
-		gs := make(map[string]Stream)
+	streams = make(map[int]map[string]Stream)
 
-		if !isActiveGame(g.GameStatus.DetailedState) {
-			continue
+	ch := make(chan Stream)
+
+	for _, g := range *schedule.Games {
+		wg.Add(1)
+		go getGameStreams(g, ch, &wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	for v := range ch {
+		if streams[v.GamePk] == nil {
+			streams[v.GamePk] = make(map[string]Stream)
 		}
-
-		for _, epg := range g.Content.Media.EPG {
-			if epg.Title != "MLBTV" {
-				continue
-			}
-
-			for _, item := range epg.MediaItems {
-				if item.MediaState == "MEDIA_ON" {
-
-					streamPlaylist := getStreamPlaylist(schedule.Date, item.ID)
-
-					if streamPlaylist != "" {
-						var si = new(Stream)
-						si.ID = strconv.Itoa(item.ID)
-						si.MediaFeedType = item.MediaFeedType
-						si.CallLetters = item.CallLetters
-						si.StreamPlaylist = streamPlaylist
-
-						gs[si.ID] = *si
-						streams[si.ID] = *si
-					}
-				}
-
-			}
-		}
-
-		schedule.Games[i].Streams = gs
-
+		streams[v.GamePk][v.ID] = v
 	}
 
 }

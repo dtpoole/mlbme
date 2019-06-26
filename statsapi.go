@@ -66,7 +66,6 @@ type Game struct {
 		Link string `json:"link"`
 	} `json:"content"`
 	LineScore LineScore `json:"linescore"`
-	Streams   map[string]Stream
 }
 
 // Data root of the JSON. Contains Dates array.
@@ -82,15 +81,16 @@ type Data struct {
 type Schedule struct {
 	Date                 string
 	URL                  string
-	TotalGames           int
-	TotalGamesInProgress int
+	TotalGames           *int
+	TotalGamesInProgress *int
 	CompletedGames       bool
-	Games                []Game
+	Games                *[]Game
 }
 
 // Stream contains information on the video stream.
 type Stream struct {
 	ID             string
+	GamePk         int
 	StreamPlaylist string
 	MediaFeedType  string `json:"mediaFeedType"`
 	CallLetters    string `json:"callLetters"`
@@ -115,11 +115,11 @@ func GetMLBSchedule() Schedule {
 	d := new(Data)
 	getJSON(s.URL, &d)
 
-	s.TotalGames = d.Dates[0].TotalGames
-	s.TotalGamesInProgress = d.Dates[0].TotalGamesInProgress
-	s.Games = d.Dates[0].Games
+	s.TotalGames = &d.Dates[0].TotalGames
+	s.TotalGamesInProgress = &d.Dates[0].TotalGamesInProgress
+	s.Games = &d.Dates[0].Games
 
-	for _, g := range s.Games {
+	for _, g := range *s.Games {
 		if isCompleteGame(g.GameStatus.DetailedState) {
 			s.CompletedGames = true
 			break
