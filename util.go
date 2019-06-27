@@ -98,8 +98,7 @@ func checkDependencies() {
 
 	proxyPaths := []string{"go-mlbam-proxy", "/usr/local/bin/go-mlbam-proxy"}
 	for _, p := range proxyPaths {
-		proxyPath, error = exec.LookPath(p)
-		if error == nil {
+		if proxyPath, error = exec.LookPath(p); error == nil {
 			break
 		}
 	}
@@ -110,8 +109,7 @@ func checkDependencies() {
 
 	streamlinkPaths := []string{"streamlink", "/usr/local/bin/streamlink"}
 	for _, p := range streamlinkPaths {
-		streamlinkPath, error = exec.LookPath(p)
-		if error == nil {
+		if streamlinkPath, error = exec.LookPath(p); error == nil {
 			break
 		}
 	}
@@ -122,8 +120,7 @@ func checkDependencies() {
 
 	vlcPaths := []string{"cvlc", "vlc", "/Applications/VLC.app/Contents/MacOS/VLC", "~/Applications/VLC.app/Contents/MacOS/VLC"}
 	for _, p := range vlcPaths {
-		vlcPath, error = exec.LookPath(p)
-		if error == nil {
+		if vlcPath, error = exec.LookPath(p); error == nil {
 			break
 		}
 	}
