@@ -71,7 +71,7 @@ func getTeamDisplay(teams Teams) string {
 func getStreamDisplay(g Game) string {
 
 	if len(streams[g.GamePk]) == 0 || !isActiveGame(g.GameStatus.DetailedState) {
-		return "\n"
+		return NLINE
 	}
 
 	var streamDisplay strings.Builder
@@ -107,10 +107,10 @@ func getGameStatusDisplay(g Game) string {
 
 func getGameScoreDisplay(g Game) string {
 
-	scoreDisplay := "\n"
+	scoreDisplay := NLINE
 
 	if hasGameStarted(g.GameStatus.DetailedState) {
-		scoreDisplay = strconv.Itoa(g.LineScore.Scoring.Away.Runs) + "\n" + strconv.Itoa(g.LineScore.Scoring.Home.Runs)
+		scoreDisplay = strconv.Itoa(g.LineScore.Scoring.Away.Runs) + NLINE + strconv.Itoa(g.LineScore.Scoring.Home.Runs)
 	}
 
 	return scoreDisplay
@@ -249,7 +249,6 @@ func run(c *cli.Context) {
 
 	checkDependencies()
 	startProxy()
-
 	refresh()
 
 	if !config.CheckStreams {

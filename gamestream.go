@@ -13,8 +13,9 @@ import (
 
 // Stream contains information on the video stream.
 type Stream struct {
-	GamePk                                         int
-	ID, StreamPlaylist, MediaFeedType, CallLetters string
+	GamePk                     int
+	ID, StreamPlaylist         string
+	MediaFeedType, CallLetters string
 }
 
 func getM3U8Url(url string) string {
