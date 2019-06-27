@@ -14,14 +14,13 @@ import (
 )
 
 var (
-	config             configuration
-	streams            map[int]map[string]Stream
-	schedule           Schedule
-	streamlinkPath     string
-	vlcPath            string
-	proxyPath          string
-	currentlyPlayingID string
-	team               string
+	config         configuration
+	streams        map[int]map[string]Stream
+	schedule       Schedule
+	streamlinkPath string
+	vlcPath        string
+	proxyPath      string
+	team           string
 )
 
 // consts

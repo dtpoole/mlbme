@@ -38,8 +38,6 @@ func runStreamlink(s Stream, http bool) {
 		log.Fatal("Unable to start streamlink: ", err)
 	}
 
-	currentlyPlayingID = s.ID
-
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
