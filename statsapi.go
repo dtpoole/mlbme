@@ -87,15 +87,6 @@ type Schedule struct {
 	Games                *[]Game
 }
 
-// Stream contains information on the video stream.
-type Stream struct {
-	ID             string
-	GamePk         int
-	StreamPlaylist string
-	MediaFeedType  string `json:"mediaFeedType"`
-	CallLetters    string `json:"callLetters"`
-}
-
 // GetMLBSchedule gets today's schedule of games
 func GetMLBSchedule() Schedule {
 

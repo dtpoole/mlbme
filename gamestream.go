@@ -11,6 +11,12 @@ import (
 	"sync"
 )
 
+// Stream contains information on the video stream.
+type Stream struct {
+	GamePk                                         int
+	ID, StreamPlaylist, MediaFeedType, CallLetters string
+}
+
 func getM3U8Url(url string) string {
 
 	response, err := http.Get(url)
