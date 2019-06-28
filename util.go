@@ -129,6 +129,4 @@ func checkDependencies() {
 		log.Fatal("ERROR: Unable to find VLC in path.")
 	}
 
-	log.Println("streamlink =", streamlinkPath, "", "VLC =", vlcPath, "", "proxy =", proxyPath)
-
 }
