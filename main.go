@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/olekukonko/tablewriter"
@@ -226,9 +228,9 @@ func startStream(streamID string, http bool) {
 
 }
 
-func exit() {
+func exit(code int) {
 	stopProxy()
-	os.Exit(0)
+	os.Exit(code)
 }
 
 func prompt() string {
@@ -246,6 +248,14 @@ func prompt() string {
 
 func run(c *cli.Context) {
 
+	// handle ctrl-c (sigterm)
+	stCh := make(chan os.Signal)
+	signal.Notify(stCh, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-stCh
+		exit(1)
+	}()
+
 	team = c.String("team")
 
 	config = loadConfiguration(c.String("config"))
@@ -260,12 +270,12 @@ func run(c *cli.Context) {
 	displayGames()
 
 	if !config.CheckStreams {
-		exit()
+		exit(0)
 	}
 
 	if c.String("stream") != "" {
 		startStream(c.String("stream"), c.Bool("http"))
-		exit()
+		exit(0)
 	}
 
 	for {
@@ -273,7 +283,7 @@ func run(c *cli.Context) {
 		input := prompt()
 
 		if input == "q" {
-			exit()
+			exit(0)
 		} else if input == "r" || input == "" {
 			displayGames()
 		} else if input == "h" {
