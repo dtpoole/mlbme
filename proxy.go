@@ -9,7 +9,6 @@ import (
 var proxyCmd *exec.Cmd
 
 func startProxy() {
-
 	if !config.CheckStreams || proxyCmd != nil {
 		return
 	}
@@ -20,9 +19,6 @@ func startProxy() {
 	if err := proxyCmd.Start(); err != nil {
 		log.Fatal("Unable to start proxy: ", err)
 	}
-
-	log.Println("Proxy started.")
-
 }
 
 func stopProxy() {
@@ -30,6 +26,5 @@ func stopProxy() {
 		if err := proxyCmd.Process.Kill(); err != nil {
 			log.Fatal("Unable to stop proxy: ", err)
 		}
-		log.Println("Proxy stopped.")
 	}
 }
