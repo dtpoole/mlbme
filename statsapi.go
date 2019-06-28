@@ -85,6 +85,7 @@ type Schedule struct {
 	TotalGamesInProgress *int
 	CompletedGames       bool
 	Games                *[]Game
+	GameMap              map[int]Game
 	LastRefreshed        time.Time
 }
 
@@ -112,11 +113,12 @@ func GetMLBSchedule() Schedule {
 	s.TotalGames = &d.Dates[0].TotalGames
 	s.TotalGamesInProgress = &d.Dates[0].TotalGamesInProgress
 	s.Games = &d.Dates[0].Games
+	s.GameMap = make(map[int]Game)
 
 	for _, g := range *s.Games {
+		s.GameMap[g.GamePk] = g
 		if isCompleteGame(g.GameStatus.DetailedState) {
 			s.CompletedGames = true
-			break
 		}
 	}
 
