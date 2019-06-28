@@ -134,7 +134,7 @@ func displayGames() {
 		showScore = true
 	}
 
-	fmt.Println("Scoreboard: ", timeFormat(time.Now(), true))
+	fmt.Println("Scoreboard: ", timeFormat(schedule.LastRefreshed, true))
 
 	for i, g := range *schedule.Games {
 

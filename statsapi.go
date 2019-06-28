@@ -85,6 +85,7 @@ type Schedule struct {
 	TotalGamesInProgress *int
 	CompletedGames       bool
 	Games                *[]Game
+	LastRefreshed        time.Time
 }
 
 // GetMLBSchedule gets today's schedule of games
@@ -99,6 +100,8 @@ func GetMLBSchedule() Schedule {
 	} else {
 		s.Date = dt.Local().Format("2006-01-02")
 	}
+
+	s.LastRefreshed = dt
 
 	// we are only getting one day of data
 	s.URL = fmt.Sprintf(config.StatsURL, s.Date)
