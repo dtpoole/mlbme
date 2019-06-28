@@ -66,20 +66,23 @@ func isCompleteGame(state string) bool {
 	return false
 }
 
-func getTeamDisplay(teams Teams) string {
+func getTeamDisplay(teams Teams, singleLine bool) string {
+	if singleLine {
+		return teams.Away.Team.Name + " (" + teams.Away.Team.Abbreviation + ") vs " + teams.Home.Team.Name + " (" + teams.Home.Team.Abbreviation + ")"
+	}
 	return teams.Away.Team.Name + " (" + teams.Away.Team.Abbreviation + ")\n" + teams.Home.Team.Name + " (" + teams.Home.Team.Abbreviation + ")"
 }
 
 func getStreamDisplay(g Game) string {
 
-	if len(streams[g.GamePk]) == 0 || !isActiveGame(g.GameStatus.DetailedState) {
+	if len(streams[g.GamePk]) == 0 {
 		return NLINE
 	}
 
 	var streamDisplay strings.Builder
 
 	for _, s := range streams[g.GamePk] {
-		streamDisplay.WriteString(s.MediaFeedType + " (" + s.CallLetters + ") [" + s.ID + "]\n")
+		streamDisplay.WriteString(s.MediaFeedType + " [" + s.CallLetters + "]\n")
 	}
 
 	return strings.TrimSpace(streamDisplay.String())
@@ -137,7 +140,7 @@ func displayGames() {
 		showScore = true
 	}
 
-	fmt.Println("Scoreboard: ", timeFormat(schedule.LastRefreshed, true))
+	fmt.Println("Scoreboard for", schedule.Date+"\t\t", "("+timeFormat(schedule.LastRefreshed, true)+")")
 
 	for i, g := range *schedule.Games {
 
@@ -147,7 +150,7 @@ func displayGames() {
 			continue
 		}
 
-		v = append(v, getTeamDisplay(g.Teams))
+		v = append(v, getTeamDisplay(g.Teams, false))
 
 		if showScore {
 			v = append(v, getGameScoreDisplay(g))
@@ -189,6 +192,22 @@ func displayGames() {
 	if table.NumLines() > 0 {
 		table.Render()
 	}
+
+	if len(streams) == 0 {
+		fmt.Println("No streams available.")
+	}
+}
+
+func displayStreamTable(streams []Stream) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoMergeCells(true)
+	table.SetRowLine(true)
+	table.SetColMinWidth(1, 50)
+	fmt.Println("Multiple Games for", streams[0].MediaFeedType+" ["+streams[0].CallLetters+"]...")
+	for _, s := range streams {
+		table.Append([]string{s.ID, getTeamDisplay(schedule.GameMap[s.GamePk].Teams, true)})
+	}
+	table.Render()
 }
 
 func refresh(periodic bool) {
@@ -211,21 +230,24 @@ func refresh(periodic bool) {
 
 func startStream(streamID string, http bool) {
 
-	var gamePk int
+	var strs []Stream
 
-	for g, gs := range streams {
-		if _, ok := gs[streamID]; ok {
-			gamePk = g
-			break
+	for _, gs := range streams {
+		for _, s := range gs {
+			if s.ID == streamID || s.CallLetters == streamID {
+				strs = append(strs, s)
+			}
 		}
 	}
 
-	if stream, ok := streams[gamePk][streamID]; ok {
-		runStreamlink(stream, http)
-	} else {
+	switch len(strs) {
+	case 0:
 		fmt.Println("Stream doesn't exist.")
+	case 1:
+		runStreamlink(strs[0], http)
+	default:
+		displayStreamTable(strs)
 	}
-
 }
 
 func exit(code int) {
@@ -244,7 +266,7 @@ func prompt() string {
 	fmt.Print(prompt)
 	input, _ := reader.ReadString('\n')
 
-	return strings.TrimSpace(input)
+	return strings.ToUpper(strings.TrimSpace(input))
 }
 
 func run(c *cli.Context) {
@@ -270,24 +292,18 @@ func run(c *cli.Context) {
 
 	displayGames()
 
-	if !config.CheckStreams {
-		exit(0)
-	}
-
 	if c.String("stream") != "" {
 		startStream(c.String("stream"), c.Bool("http"))
 		exit(0)
 	}
 
 	for {
-
 		input := prompt()
-
-		if input == "q" {
+		if input == "Q" {
 			exit(0)
-		} else if input == "r" || input == "" {
+		} else if input == "R" || input == "" {
 			displayGames()
-		} else if input == "h" {
+		} else if input == "H" {
 			fmt.Println("[streamId] = play stream\nr = refresh\nq = quit")
 		} else {
 			startStream(input, c.Bool("http"))
