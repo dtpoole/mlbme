@@ -28,7 +28,7 @@ func runStreamlink(s Stream, http bool) {
 
 	streamlinkCmd.Env = os.Environ()
 
-	log.Println("Starting streamlink...")
+	fmt.Println("Starting", s.MediaFeedType+" ["+s.CallLetters+"] stream for", getTeamDisplay(schedule.GameMap[s.GamePk].Teams, true), "...")
 
 	stdout, err := streamlinkCmd.StdoutPipe()
 	if err != nil {
@@ -43,9 +43,13 @@ func runStreamlink(s Stream, http bool) {
 	for scanner.Scan() {
 		m := scanner.Text()
 		log.Println(m)
+		// if 403 assume stream isn't available.
 		// check for error opening commerical break stream. if it occurs, sleep for 60 seconds and restart stream.
 		// TODO: check to see if streamlink can handle this
-		if match("Unable to open URL", m) {
+		if match("403 Client Error: Forbidden", m) {
+			log.Println("ERROR: Stream is not available.")
+			streamlinkCmd.Process.Kill()
+		} else if match("invalid header name for url", m) {
 			log.Println("ERROR: Unable to open URL. Will reopen stream in 60 secs")
 			streamlinkCmd.Process.Kill()
 			time.Sleep(60 * time.Second)
