@@ -229,6 +229,7 @@ func startStream(streamID string, http bool) {
 }
 
 func exit(code int) {
+	stopStreamlink()
 	stopProxy()
 	os.Exit(code)
 }

@@ -22,13 +22,13 @@ func runStreamlink(s Stream, http bool) {
 
 	ua := "User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
 
-	log.Println("Starting streamlink...")
-
 	streamlinkCmd = exec.Command(streamlinkPath, fmt.Sprintf("hlsvariant://%s name_key=bitrate verify=False", s.StreamPlaylist),
 		"best", "--http-header", fmt.Sprintf("\"%s\"", ua), "--hls-segment-threads=4", "--https-proxy", "127.0.0.1:9876",
 		"--player", vlc)
 
 	streamlinkCmd.Env = os.Environ()
+
+	log.Println("Starting streamlink...")
 
 	stdout, err := streamlinkCmd.StdoutPipe()
 	if err != nil {
@@ -42,7 +42,7 @@ func runStreamlink(s Stream, http bool) {
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		m := scanner.Text()
-
+		log.Println(m)
 		// check for error opening commerical break stream. if it occurs, sleep for 60 seconds and restart stream.
 		// TODO: check to see if streamlink can handle this
 		if match("Unable to open URL", m) {
@@ -51,7 +51,16 @@ func runStreamlink(s Stream, http bool) {
 			time.Sleep(60 * time.Second)
 			runStreamlink(s, http)
 		}
-		log.Println(m)
+
 	}
 
+}
+
+func stopStreamlink() {
+	if streamlinkCmd != nil {
+		if err := streamlinkCmd.Process.Kill(); err != nil {
+			log.Fatal("Unable to stop streamlink: ", err)
+		}
+		log.Println("Stream stopped.")
+	}
 }
