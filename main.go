@@ -25,8 +25,9 @@ var (
 
 // consts
 const (
-	NLINE   = "\n"
-	VERSION = "1.0"
+	NLINE       = "\n"
+	VERSION     = "1.0"
+	RefreshRate = 3 * time.Minute
 )
 
 func hasGameStarted(state string) bool {
@@ -188,19 +189,22 @@ func displayGames() {
 	}
 }
 
-func refresh() {
-	schedule = GetMLBSchedule()
-
-	if config.CheckStreams {
-		checkAvailableStreams()
+func refresh(periodic bool) {
+	r := func() {
+		schedule = GetMLBSchedule()
+		if config.CheckStreams {
+			checkAvailableStreams()
+		}
 	}
 
-	displayGames()
-
-	if config.CheckStreams && len(streams) == 0 {
-		fmt.Println("No streams available.")
+	if !periodic {
+		r()
+	} else {
+		ticker := time.NewTicker(RefreshRate)
+		for range ticker.C {
+			r()
+		}
 	}
-
 }
 
 func startStream(streamID string, http bool) {
@@ -248,7 +252,12 @@ func run(c *cli.Context) {
 
 	checkDependencies()
 	startProxy()
-	refresh()
+	refresh(false)
+
+	// setup background refresh
+	go refresh(true)
+
+	displayGames()
 
 	if !config.CheckStreams {
 		exit()
@@ -265,8 +274,8 @@ func run(c *cli.Context) {
 
 		if input == "q" {
 			exit()
-		} else if input == "r" {
-			refresh()
+		} else if input == "r" || input == "" {
+			displayGames()
 		} else if input == "h" {
 			fmt.Println("[streamId] = play stream\nr = refresh\nq = quit")
 		} else {
