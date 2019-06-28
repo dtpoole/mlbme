@@ -55,7 +55,7 @@ func getGameStreams(g Game, ch chan Stream, wg *sync.WaitGroup) {
 		}
 
 		for _, item := range epg.MediaItems {
-			if item.MediaState == "MEDIA_ON" {
+			if item.MediaState == "MEDIA_ON" || item.MediaState == "MEDIA_ARCHIVE" {
 
 				playlist := ""
 
