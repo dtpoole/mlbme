@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"syscall"
 	"time"
 )
 
@@ -48,10 +49,10 @@ func runStreamlink(s Stream, http bool) {
 		// TODO: check to see if streamlink can handle this
 		if match("403 Client Error: Forbidden", m) {
 			log.Println("ERROR: Stream is not available.")
-			streamlinkCmd.Process.Kill()
+			stopStreamlink()
 		} else if match("invalid header name for url", m) {
 			log.Println("ERROR: Unable to open URL. Will reopen stream in 60 secs")
-			streamlinkCmd.Process.Kill()
+			stopStreamlink()
 			time.Sleep(60 * time.Second)
 			runStreamlink(s, http)
 		}
@@ -62,7 +63,7 @@ func runStreamlink(s Stream, http bool) {
 
 func stopStreamlink() {
 	if streamlinkCmd != nil {
-		if err := streamlinkCmd.Process.Kill(); err != nil {
+		if err := streamlinkCmd.Process.Signal(syscall.SIGTERM); err != nil {
 			log.Fatal("Unable to stop streamlink: ", err)
 		}
 		log.Println("Stream stopped.")

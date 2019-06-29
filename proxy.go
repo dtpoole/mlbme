@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"syscall"
 )
 
 var proxyCmd *exec.Cmd
@@ -23,7 +24,7 @@ func startProxy() {
 
 func stopProxy() {
 	if proxyCmd != nil {
-		if err := proxyCmd.Process.Kill(); err != nil {
+		if err := proxyCmd.Process.Signal(syscall.SIGTERM); err != nil {
 			log.Fatal("Unable to stop proxy: ", err)
 		}
 	}
