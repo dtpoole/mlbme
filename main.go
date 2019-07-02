@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli"
 )
 
 var (
@@ -269,7 +268,14 @@ func prompt() string {
 	return strings.ToUpper(strings.TrimSpace(input))
 }
 
-func run(c *cli.Context) {
+func main() {
+
+	// setup flags
+	configFlag := flag.String("config", "config.json", "JSON configuration")
+	httpFlag := flag.Bool("http", false, "Tell VLC to use HTTP streaming instead of playing locally")
+	teamFlag := flag.String("team", "", "Filter on team by abbreviation")
+	streamFlag := flag.String("stream", "", "Call letter of stream to start")
+	flag.Parse()
 
 	// handle ctrl-c (sigterm)
 	stCh := make(chan os.Signal)
@@ -279,9 +285,9 @@ func run(c *cli.Context) {
 		exit(1)
 	}()
 
-	team = c.String("team")
+	config = loadConfiguration(*configFlag)
 
-	config = loadConfiguration(c.String("config"))
+	team = *teamFlag
 
 	checkDependencies()
 	startProxy()
@@ -292,9 +298,8 @@ func run(c *cli.Context) {
 
 	displayGames()
 
-	if c.String("stream") != "" {
-		startStream(c.String("stream"), c.Bool("http"))
-		exit(0)
+	if *streamFlag != "" {
+		startStream(*streamFlag, *httpFlag)
 	}
 
 	for {
@@ -306,48 +311,7 @@ func run(c *cli.Context) {
 		} else if input == "H" {
 			fmt.Println("[streamId] = play stream\nr = refresh\nq = quit")
 		} else {
-			startStream(input, c.Bool("http"))
+			startStream(input, *httpFlag)
 		}
-
-	}
-
-}
-
-func main() {
-	app := cli.NewApp()
-	app.Name = "mlbme"
-	app.Usage = "stream MLB games"
-	app.Version = VERSION
-
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "config, c",
-			Value: "config.json",
-			Usage: "Load configuration from `config.json`",
-		},
-		cli.StringFlag{
-			Name:  "team, t",
-			Value: "",
-			Usage: "Filter on team by abbreviation",
-		},
-		cli.StringFlag{
-			Name:  "stream, s",
-			Value: "",
-			Usage: "Stream ID to stream",
-		},
-		cli.BoolFlag{
-			Name:  "http",
-			Usage: "Tell VLC to use HTTP streaming instead of playing locally",
-		},
-	}
-
-	app.Action = func(c *cli.Context) error {
-		run(c)
-		return nil
-	}
-
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
 	}
 }
