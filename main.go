@@ -65,14 +65,16 @@ func isCompleteGame(state string) bool {
 	return false
 }
 
-func getTeamDisplay(teams Teams, singleLine bool) string {
+func getTeamDisplay(g *Game, singleLine bool) string {
+
+	delim := NLINE
 	if singleLine {
-		return teams.Away.Team.Name + " (" + teams.Away.Team.Abbreviation + ") vs " + teams.Home.Team.Name + " (" + teams.Home.Team.Abbreviation + ")"
+		delim = " vs "
 	}
-	return teams.Away.Team.Name + " (" + teams.Away.Team.Abbreviation + ")\n" + teams.Home.Team.Name + " (" + teams.Home.Team.Abbreviation + ")"
+	return g.Teams.Away.Team.Name + " (" + g.Teams.Away.Team.Abbreviation + ")" + delim + g.Teams.Home.Team.Name + " (" + g.Teams.Home.Team.Abbreviation + ")"
 }
 
-func getStreamDisplay(g Game) string {
+func getStreamDisplay(g *Game) string {
 
 	if len(streams[g.GamePk]) == 0 {
 		return NLINE
@@ -88,7 +90,7 @@ func getStreamDisplay(g Game) string {
 
 }
 
-func getGameStatusDisplay(g Game) string {
+func getGameStatusDisplay(g *Game) string {
 
 	var sd strings.Builder
 
@@ -96,7 +98,7 @@ func getGameStatusDisplay(g Game) string {
 		sd.WriteString(strings.ToUpper(g.LineScore.InningState[0:3]) + " " + g.LineScore.CurrentInningOrdinal)
 	} else if g.GameStatus.StatusCode == "S" || g.GameStatus.StatusCode == "P" {
 		t, _ := time.Parse(time.RFC3339, g.GameDate)
-		sd.WriteString(timeFormat(t, false))
+		sd.WriteString(timeFormat(&t, false))
 	} else if match(`^P*`, g.GameStatus.StatusCode) || g.GameStatus.StatusCode == "DR" {
 		sd.WriteString(g.GameStatus.DetailedState)
 	}
@@ -109,7 +111,7 @@ func getGameStatusDisplay(g Game) string {
 
 }
 
-func getGameScoreDisplay(g Game) string {
+func getGameScoreDisplay(g *Game) string {
 
 	scoreDisplay := NLINE
 
@@ -139,7 +141,7 @@ func displayGames() {
 		showScore = true
 	}
 
-	fmt.Println("Scoreboard for", schedule.Date+"\t\t", "("+timeFormat(schedule.LastRefreshed, true)+")")
+	fmt.Println("Scoreboard for", schedule.Date+"\t\t", "("+timeFormat(&schedule.LastRefreshed, true)+")")
 
 	for i, g := range *schedule.Games {
 
@@ -149,16 +151,16 @@ func displayGames() {
 			continue
 		}
 
-		v = append(v, getTeamDisplay(g.Teams, false))
+		v = append(v, getTeamDisplay(&g, false))
 
 		if showScore {
-			v = append(v, getGameScoreDisplay(g))
+			v = append(v, getGameScoreDisplay(&g))
 		}
 
-		v = append(v, getGameStatusDisplay(g))
+		v = append(v, getGameStatusDisplay(&g))
 
 		if showStreams() {
-			v = append(v, getStreamDisplay(g))
+			v = append(v, getStreamDisplay(&g))
 		}
 
 		if col == 0 {
@@ -204,7 +206,8 @@ func displayStreamTable(streams []Stream) {
 	table.SetColMinWidth(1, 50)
 	fmt.Println("Multiple Games for", streams[0].MediaFeedType+" ["+streams[0].CallLetters+"]...")
 	for _, s := range streams {
-		table.Append([]string{s.ID, getTeamDisplay(schedule.GameMap[s.GamePk].Teams, true)})
+		g := schedule.GameMap[s.GamePk]
+		table.Append([]string{s.ID, getTeamDisplay(&g, true)})
 	}
 	table.Render()
 }

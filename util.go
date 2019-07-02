@@ -55,7 +55,7 @@ func loadConfiguration(file string) configuration {
 	return config
 }
 
-func timeFormat(x time.Time, showDate bool) string {
+func timeFormat(x *time.Time, showDate bool) string {
 	location, _ := time.LoadLocation("Local")
 	if showDate {
 		return x.In(location).Format("2006-01-02 3:04PM")

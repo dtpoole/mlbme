@@ -29,7 +29,8 @@ func runStreamlink(s Stream, http bool) {
 
 	streamlinkCmd.Env = os.Environ()
 
-	fmt.Println("Starting", s.MediaFeedType+" ["+s.CallLetters+"] stream for", getTeamDisplay(schedule.GameMap[s.GamePk].Teams, true), "...")
+	g := schedule.GameMap[s.GamePk]
+	fmt.Println("Starting", s.MediaFeedType+" ["+s.CallLetters+"] stream for", getTeamDisplay(&g, true), "...")
 
 	stdout, err := streamlinkCmd.StdoutPipe()
 	if err != nil {
