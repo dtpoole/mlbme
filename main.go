@@ -92,7 +92,7 @@ func getStreamDisplay(g *Game) string {
 
 func getGameStatusDisplay(g *Game) string {
 
-	var sd strings.Builder
+	sd := &strings.Builder{}
 
 	if g.GameStatus.StatusCode == "I" {
 		sd.WriteString(strings.ToUpper(g.LineScore.InningState[0:3]) + " " + g.LineScore.CurrentInningOrdinal)
@@ -129,8 +129,10 @@ func showStreams() bool {
 	return false
 }
 
-func displayGames() {
-	table := tablewriter.NewWriter(os.Stdout)
+func generateGameTable() string {
+
+	ts := &strings.Builder{}
+	table := tablewriter.NewWriter(ts)
 	table.SetRowLine(true)
 
 	var v []string
@@ -195,21 +197,28 @@ func displayGames() {
 	}
 
 	if len(streams) == 0 {
-		fmt.Println("No streams available.")
+		ts.WriteString("No streams available.")
 	}
+
+	return ts.String()
 }
 
-func displayStreamTable(streams []Stream) {
-	table := tablewriter.NewWriter(os.Stdout)
+func generateStreamTable(streams []Stream) string {
+
+	ts := &strings.Builder{}
+	table := tablewriter.NewWriter(ts)
 	table.SetAutoMergeCells(true)
 	table.SetRowLine(true)
 	table.SetColMinWidth(1, 50)
-	fmt.Println("Multiple Games for", streams[0].MediaFeedType+" ["+streams[0].CallLetters+"]...")
+
+	ts.WriteString("Multiple Games for " + streams[0].MediaFeedType + " [" + streams[0].CallLetters + "]...")
 	for _, s := range streams {
 		g := schedule.GameMap[s.GamePk]
 		table.Append([]string{s.ID, getTeamDisplay(&g, true)})
 	}
 	table.Render()
+	return ts.String()
+
 }
 
 func refresh(periodic bool) {
@@ -248,7 +257,7 @@ func startStream(streamID string, http bool) {
 	case 1:
 		runStreamlink(strs[0], http)
 	default:
-		displayStreamTable(strs)
+		fmt.Println(generateStreamTable(strs))
 	}
 }
 
@@ -260,12 +269,9 @@ func exit(code int) {
 
 func prompt() string {
 
-	var prompt string
 	reader := bufio.NewReader(os.Stdin)
 
-	prompt = prompt + ">> "
-
-	fmt.Print(prompt)
+	fmt.Print(">> ")
 	input, _ := reader.ReadString('\n')
 
 	return strings.ToUpper(strings.TrimSpace(input))
@@ -299,7 +305,7 @@ func main() {
 	// setup background refresh
 	go refresh(true)
 
-	displayGames()
+	fmt.Println(generateGameTable())
 
 	if *streamFlag != "" {
 		startStream(*streamFlag, *httpFlag)
@@ -310,9 +316,9 @@ func main() {
 		if input == "Q" {
 			exit(0)
 		} else if input == "R" || input == "" {
-			displayGames()
+			fmt.Println(generateGameTable())
 		} else if input == "H" {
-			fmt.Println("[streamId] = play stream\nr = refresh\nq = quit")
+			fmt.Println("[call letters] = play stream\nr = refresh\nq = quit")
 		} else {
 			startStream(input, *httpFlag)
 		}
