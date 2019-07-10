@@ -17,7 +17,7 @@ type Stream struct {
 	MediaFeedType, CallLetters string
 }
 
-func getM3U8Url(url string) string {
+func getPlaylistURL(url string) string {
 
 	resp := httpGet(url)
 	defer resp.Body.Close()
@@ -51,13 +51,13 @@ func getGameStreams(g Game, ch chan Stream, wg *sync.WaitGroup) {
 		}
 
 		for _, item := range epg.MediaItems {
-			if item.MediaState == "MEDIA_ON" || item.MediaState == "MEDIA_ARCHIVE" {
+			if item.MediaState == "MEDIA_ON" {
 
 				playlist := ""
 
 				for _, cdn := range cdns {
 					streamURL := fmt.Sprintf(config.StreamPlaylistURL, schedule.Date, strconv.Itoa(item.ID), cdn)
-					playlist = getM3U8Url(streamURL)
+					playlist = getPlaylistURL(streamURL)
 					if playlist != "" {
 						break
 					}
