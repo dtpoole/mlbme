@@ -176,7 +176,7 @@ func generateGameTable() string {
 		showScore = true
 	}
 
-	fmt.Println("Scoreboard for", schedule.Date+"\t\t", "("+timeFormat(&schedule.LastRefreshed, true)+")")
+	fmt.Println("Scoreboard for", schedule.Date, "(as of "+timeFormat(&schedule.LastRefreshed, false)+")")
 
 	for i, g := range *schedule.Games {
 
@@ -337,7 +337,7 @@ func main() {
 		if input == "Q" {
 			exit(nil)
 		} else if input == "R" || input == "" {
-			fmt.Println(generateGameTable())
+			fmt.Print(generateGameTable())
 		} else if input == "H" {
 			fmt.Println("[call letters] = play stream\nr = refresh\nq = quit")
 		} else {
