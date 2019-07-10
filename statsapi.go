@@ -114,8 +114,7 @@ func GetMLBSchedule() Schedule {
 	resp := httpGet(s.URL)
 	defer resp.Body.Close()
 
-	err := json.NewDecoder(resp.Body).Decode(&d)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
 		log.Fatal(err)
 	}
 
@@ -130,7 +129,6 @@ func GetMLBSchedule() Schedule {
 			s.GameMap[g.GamePk] = g
 			if isCompleteGame(g.GameStatus.DetailedState) {
 				s.CompletedGames = true
-				break
 			}
 		}
 
