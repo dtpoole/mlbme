@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -57,7 +58,9 @@ func init() {
 	signal.Notify(stCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-stCh
-		exit(1)
+		stopStreamlink()
+		stopProxy()
+		os.Exit(1)
 	}()
 }
 
@@ -272,7 +275,6 @@ func refresh(periodic bool) {
 }
 
 func startStream(streamID string, http bool) {
-
 	var strs []Stream
 
 	for _, gs := range streams {
@@ -293,19 +295,21 @@ func startStream(streamID string, http bool) {
 	}
 }
 
-func exit(code int) {
+func exit(err error) {
+	code := 0
+	if err != nil {
+		code = 1
+		log.Println(err)
+	}
 	stopStreamlink()
 	stopProxy()
 	os.Exit(code)
 }
 
 func prompt() string {
-
 	reader := bufio.NewReader(os.Stdin)
-
 	fmt.Print(">> ")
 	input, _ := reader.ReadString('\n')
-
 	return strings.ToUpper(strings.TrimSpace(input))
 }
 
@@ -331,7 +335,7 @@ func main() {
 	for {
 		input := prompt()
 		if input == "Q" {
-			exit(0)
+			exit(nil)
 		} else if input == "R" || input == "" {
 			fmt.Println(generateGameTable())
 		} else if input == "H" {

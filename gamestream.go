@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,13 +23,13 @@ func getPlaylistURL(url string) string {
 
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		exit(err)
 	}
 
 	// stream not available
 	matched, err := regexp.Match(`^Not*`, responseData)
 	if err != nil {
-		log.Fatal(err)
+		exit(err)
 	}
 
 	if matched {

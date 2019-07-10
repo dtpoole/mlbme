@@ -2,8 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
+	"errors"
 	"net/http"
 	"os"
 	"os/exec"
@@ -24,31 +23,30 @@ type configuration struct {
 func loadConfiguration(file string) configuration {
 
 	if _, err := os.Stat(file); os.IsNotExist(err) {
-		fmt.Println(file + ": File doesn't exist.")
-		os.Exit(1)
+		exit(errors.New("ERROR: " + file + ": File doesn't exist"))
 	}
 
 	configFile, err := os.Open(file)
 	defer configFile.Close()
 	if err != nil {
-		fmt.Println(err.Error())
+		exit(err)
 	}
 	jsonParser := json.NewDecoder(configFile)
 	jsonParser.Decode(&config)
 
 	if empty(config.StatsURL) {
-		log.Fatal("ERROR: Please set statsURL in configuration file.")
+		exit(errors.New("ERROR: Please set statsURL in configuration file"))
 	}
 
 	if config.CheckStreams {
 		if empty(config.StreamPlaylistURL) {
-			log.Fatal("ERROR: Please set streamPlaylistURL in configuration file.")
+			exit(errors.New("ERROR: Please set streamPlaylistURL in configuration file"))
 		}
 		if empty(config.Proxy.Domain) {
-			log.Fatal("ERROR: Please set proxy domain in configuration file.")
+			exit(errors.New("ERROR: Please set proxy domain in configuration file"))
 		}
 		if empty(config.Proxy.SourceDomains) {
-			log.Fatal("ERROR: Please set source domains in configuration file.")
+			exit(errors.New("ERROR: Please set source domains in configuration file"))
 		}
 	}
 
@@ -78,13 +76,13 @@ func match(pattern string, in string) bool {
 func httpGet(url string) *http.Response {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal(err)
+		exit(err)
 	}
 	req.Header.Set("User-Agent", UserAgent)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		exit(err)
 	}
 
 	return resp
@@ -98,7 +96,7 @@ func checkDependencies() {
 		return
 	}
 
-	proxyPaths := []string{"go-mlbam-proxy", "/usr/local/bin/go-mlbam-proxy"}
+	proxyPaths := []string{"go-mlbam-proxy", "go-mlbam-proxy/go-mlbam-proxy", "/usr/local/bin/go-mlbam-proxy"}
 	for _, p := range proxyPaths {
 		if proxyPath, error = exec.LookPath(p); error == nil {
 			break
@@ -106,7 +104,7 @@ func checkDependencies() {
 	}
 
 	if empty(proxyPath) {
-		log.Fatal("ERROR: Unable to find go-mlbam-proxy in path.")
+		exit(errors.New("ERROR: Unable to find go-mlbam-proxy in path"))
 	}
 
 	streamlinkPaths := []string{"streamlink", "/usr/local/bin/streamlink"}
@@ -117,7 +115,7 @@ func checkDependencies() {
 	}
 
 	if empty(streamlinkPath) {
-		log.Fatal("ERROR: Unable to find streamlink in path.")
+		exit(errors.New("ERROR: Unable to find streamlink in path"))
 	}
 
 	vlcPaths := []string{"cvlc", "vlc", "/Applications/VLC.app/Contents/MacOS/VLC", "~/Applications/VLC.app/Contents/MacOS/VLC"}
@@ -128,7 +126,7 @@ func checkDependencies() {
 	}
 
 	if empty(vlcPath) {
-		log.Fatal("ERROR: Unable to find VLC in path.")
+		exit(errors.New("ERROR: Unable to find VLC in path"))
 	}
 
 }

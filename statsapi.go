@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -115,7 +114,7 @@ func GetMLBSchedule() Schedule {
 	defer resp.Body.Close()
 
 	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
-		log.Fatal(err)
+		exit(err)
 	}
 
 	s.TotalGames = &d.TotalGames
