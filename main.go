@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,14 +17,18 @@ import (
 )
 
 var (
-	config         configuration
-	streams        map[int]map[string]Stream
-	schedule       Schedule
-	streamlinkPath string
-	vlcPath        string
-	proxyPath      string
-	team           string
-	httpClient     *http.Client
+	config                             configuration
+	streams                            map[int]map[string]Stream
+	schedule                           Schedule
+	streamlinkPath, vlcPath, proxyPath string
+	httpClient                         *http.Client
+)
+
+var (
+	configFlag = flag.String("config", "config.json", "JSON configuration")
+	httpFlag   = flag.Bool("http", false, "Tell VLC to use HTTP streaming instead of playing locally")
+	teamFlag   = flag.String("team", "", "Filter on team by abbreviation")
+	streamFlag = flag.String("stream", "", "Call letter of stream to start")
 )
 
 // consts
@@ -38,10 +43,22 @@ func init() {
 
 	httpClient = &http.Client{
 		Transport: &http.Transport{
-			MaxIdleConnsPerHost: 20,
+			Dial: (&net.Dialer{
+				Timeout: 5 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout: 5 * time.Second,
+			MaxIdleConnsPerHost: 10,
 		},
-		Timeout: time.Duration(5) * time.Second,
+		Timeout: 5 * time.Second,
 	}
+
+	// handle ctrl-c (sigterm)
+	stCh := make(chan os.Signal)
+	signal.Notify(stCh, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-stCh
+		exit(1)
+	}()
 }
 
 func hasGameStarted(state string) bool {
@@ -162,7 +179,7 @@ func generateGameTable() string {
 
 		col := i % 2
 
-		if !empty(team) && (g.Teams.Away.Team.Abbreviation != team && g.Teams.Home.Team.Abbreviation != team) {
+		if !empty(*teamFlag) && (g.Teams.Away.Team.Abbreviation != *teamFlag && g.Teams.Home.Team.Abbreviation != *teamFlag) {
 			continue
 		}
 
@@ -179,7 +196,7 @@ func generateGameTable() string {
 		}
 
 		if col == 0 {
-			if empty(team) {
+			if empty(*teamFlag) {
 				v = append(v, NLINE)
 			}
 		} else {
@@ -292,24 +309,9 @@ func prompt() string {
 
 func main() {
 
-	// setup flags
-	configFlag := flag.String("config", "config.json", "JSON configuration")
-	httpFlag := flag.Bool("http", false, "Tell VLC to use HTTP streaming instead of playing locally")
-	teamFlag := flag.String("team", "", "Filter on team by abbreviation")
-	streamFlag := flag.String("stream", "", "Call letter of stream to start")
 	flag.Parse()
 
-	// handle ctrl-c (sigterm)
-	stCh := make(chan os.Signal)
-	signal.Notify(stCh, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-stCh
-		exit(1)
-	}()
-
 	config = loadConfiguration(*configFlag)
-
-	team = *teamFlag
 
 	checkDependencies()
 	startProxy()
@@ -318,7 +320,7 @@ func main() {
 	// setup background refresh
 	go refresh(true)
 
-	fmt.Println(generateGameTable())
+	fmt.Print(generateGameTable())
 
 	if *streamFlag != "" {
 		startStream(*streamFlag, *httpFlag)
