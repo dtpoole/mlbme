@@ -63,19 +63,6 @@ func timeFormat(x *time.Time, showDate bool) string {
 	return x.In(location).Format("3:04PM")
 }
 
-func getJSON(url string, target interface{}) error {
-
-	client := &http.Client{Timeout: 10 * time.Second}
-
-	r, err := client.Get(url)
-	if err != nil {
-		return err
-	}
-	defer r.Body.Close()
-
-	return json.NewDecoder(r.Body).Decode(target)
-}
-
 func empty(in string) bool {
 	if in == "" {
 		return true
@@ -86,6 +73,21 @@ func empty(in string) bool {
 func match(pattern string, in string) bool {
 	m, _ := regexp.MatchString(pattern, in)
 	return m
+}
+
+func httpGet(url string) *http.Response {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("User-Agent", UserAgent)
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return resp
 }
 
 func checkDependencies() {

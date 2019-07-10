@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,13 +19,10 @@ type Stream struct {
 
 func getM3U8Url(url string) string {
 
-	response, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer response.Body.Close()
+	resp := httpGet(url)
+	defer resp.Body.Close()
 
-	responseData, err := ioutil.ReadAll(response.Body)
+	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

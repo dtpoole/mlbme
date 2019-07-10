@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -108,7 +110,14 @@ func GetMLBSchedule() Schedule {
 	s.URL = fmt.Sprintf(config.StatsURL, s.Date)
 
 	d := new(Data)
-	getJSON(s.URL, &d)
+
+	resp := httpGet(s.URL)
+	defer resp.Body.Close()
+
+	err := json.NewDecoder(resp.Body).Decode(&d)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	s.TotalGames = &d.Dates[0].TotalGames
 	s.TotalGamesInProgress = &d.Dates[0].TotalGamesInProgress

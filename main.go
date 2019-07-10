@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -22,6 +23,7 @@ var (
 	vlcPath        string
 	proxyPath      string
 	team           string
+	httpClient     *http.Client
 )
 
 // consts
@@ -29,7 +31,18 @@ const (
 	NLINE       = "\n"
 	VERSION     = "1.0"
 	RefreshRate = 3 * time.Minute
+	UserAgent   = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
 )
+
+func init() {
+
+	httpClient = &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: 20,
+		},
+		Timeout: time.Duration(5) * time.Second,
+	}
+}
 
 func hasGameStarted(state string) bool {
 	switch state {
