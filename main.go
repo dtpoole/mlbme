@@ -18,24 +18,24 @@ import (
 )
 
 var (
-	config                             configuration
-	streams                            map[int]map[string]Stream
-	schedule                           Schedule
-	streamlinkPath, vlcPath, proxyPath string
-	httpClient                         *http.Client
+	config                                      configuration
+	streams                                     map[int]map[string]Stream
+	schedule                                    Schedule
+	version, streamlinkPath, vlcPath, proxyPath string
+	httpClient                                  *http.Client
 )
 
 var (
-	configFlag = flag.String("config", "config.json", "JSON configuration")
-	httpFlag   = flag.Bool("http", false, "Tell VLC to use HTTP streaming instead of playing locally")
-	teamFlag   = flag.String("team", "", "Filter on team by abbreviation")
-	streamFlag = flag.String("stream", "", "Call letter of stream to start")
+	configFlag  = flag.String("config", "config.json", "JSON configuration")
+	httpFlag    = flag.Bool("http", false, "Tell VLC to use HTTP streaming instead of playing locally")
+	teamFlag    = flag.String("team", "", "Filter on team by abbreviation")
+	streamFlag  = flag.String("stream", "", "Call letter of stream to start")
+	versionFlag = flag.Bool("v", false, "Display version")
 )
 
 // consts
 const (
 	NLINE       = "\n"
-	VERSION     = "1.0"
 	RefreshRate = 3 * time.Minute
 	UserAgent   = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
 )
@@ -316,6 +316,11 @@ func prompt() string {
 func main() {
 
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 
 	config = loadConfiguration(*configFlag)
 
