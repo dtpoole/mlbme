@@ -73,10 +73,10 @@ type Game struct {
 // Data root of the JSON. Contains Dates array.
 type Data struct {
 	Dates []struct {
-		TotalGames           int    `json:"totalGames"`
-		TotalGamesInProgress int    `json:"totalGamesInProgress"`
-		Games                []Game `json:"games"`
+		Games []Game `json:"games"`
 	} `json:"dates"`
+	TotalGames           int `json:"totalGames"`
+	TotalGamesInProgress int `json:"totalGamesInProgress"`
 }
 
 // Schedule contains details of the day's MLB games.
@@ -119,16 +119,23 @@ func GetMLBSchedule() Schedule {
 		log.Fatal(err)
 	}
 
-	s.TotalGames = &d.Dates[0].TotalGames
-	s.TotalGamesInProgress = &d.Dates[0].TotalGamesInProgress
-	s.Games = &d.Dates[0].Games
+	s.TotalGames = &d.TotalGames
+	s.TotalGamesInProgress = &d.TotalGamesInProgress
 	s.GameMap = make(map[int]Game)
 
-	for _, g := range *s.Games {
-		s.GameMap[g.GamePk] = g
-		if isCompleteGame(g.GameStatus.DetailedState) {
-			s.CompletedGames = true
+	if len(d.Dates) > 0 {
+		s.Games = &d.Dates[0].Games
+
+		for _, g := range *s.Games {
+			s.GameMap[g.GamePk] = g
+			if isCompleteGame(g.GameStatus.DetailedState) {
+				s.CompletedGames = true
+				break
+			}
 		}
+
+	} else {
+		s.Games = &[]Game{}
 	}
 
 	return *s

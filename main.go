@@ -208,8 +208,10 @@ func generateGameTable() string {
 
 	}
 
-	// uneven game count
-	if total == 1 && len(v) > 0 {
+	if total == 0 {
+		ts.WriteString("No Games\n")
+		// uneven game count
+	} else if total == 1 && len(v) > 0 {
 		table.Append(v)
 	} else if len(v) > 0 {
 		pad := []string{NLINE, NLINE}
@@ -226,8 +228,8 @@ func generateGameTable() string {
 		table.Render()
 	}
 
-	if len(streams) == 0 {
-		ts.WriteString("No streams available.")
+	if total > 0 && config.CheckStreams && len(streams) == 0 {
+		ts.WriteString("No streams available.\n")
 	}
 
 	return ts.String()
