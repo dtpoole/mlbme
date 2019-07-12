@@ -14,11 +14,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dtpoole/mlbme/lib"
 	"github.com/olekukonko/tablewriter"
 )
 
 var (
-	config                                      configuration
+	config                                      lib.Config
+	err                                         error
 	streams                                     map[int]map[string]Stream
 	schedule                                    Schedule
 	version, streamlinkPath, vlcPath, proxyPath string
@@ -322,7 +324,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	config = loadConfiguration(*configFlag)
+	config, err = lib.LoadConfig(*configFlag)
+
+	if err != nil {
+		exit(err)
+	}
 
 	checkDependencies()
 	startProxy()
