@@ -63,6 +63,7 @@ func (p *Proxy) Stop() (err error) {
 	return
 }
 
-func (p *Proxy) Info() {
+// Status of the proxy
+func (p *Proxy) Status() {
 	fmt.Println(p.path, "\n", p.running)
 }

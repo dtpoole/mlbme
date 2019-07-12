@@ -90,6 +90,7 @@ func startStream(streamID string, http bool) {
 	case 0:
 		fmt.Println("Stream doesn't exist.")
 	case 1:
+		fmt.Println(ui.GetStartStreamlinkDisplay(strs[0]))
 		streamlink.Run(strs[0], http)
 	default:
 		fmt.Println(ui.GenerateStreamTable(strs))
@@ -153,9 +154,9 @@ func main() {
 	// setup background refresh
 	go refresh(true)
 
-	// if *streamFlag != "" {
-	// 	lib.StartStream(*streamFlag, *httpFlag)
-	// }
+	if *streamFlag != "" {
+		startStream(*streamFlag, *httpFlag)
+	}
 
 	for {
 		input := prompt()
@@ -165,8 +166,8 @@ func main() {
 			fmt.Print(ui.GenerateScoreboard())
 		} else if input == "H" {
 			fmt.Println("[call letters] = play stream\nr = refresh\nq = quit")
-			// } else {
-			// 	lib.StartStream(input, *httpFlag)
+		} else {
+			startStream(input, *httpFlag)
 		}
 	}
 }

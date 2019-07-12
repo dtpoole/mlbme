@@ -54,8 +54,6 @@ func NewStreamlink() (s Streamlink, err error) {
 // Run streamlink
 func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 
-	//s.stream = stream
-
 	if http || match("cvlc", s.vlcPath) {
 		log.Println("HTTP streaming enabled.")
 		s.vlcPath = s.vlcPath + " --sout '#standard{access=http,mux=ts,dst=:6789}'"
@@ -66,9 +64,6 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 		"--player", s.vlcPath)
 
 	s.cmd.Env = os.Environ()
-
-	//g := schedule.GameMap[s.GamePk]
-	//fmt.Println("Starting", s.MediaFeedType+" ["+s.CallLetters+"] stream for", getTeamDisplay(&g, true), "...")
 
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {

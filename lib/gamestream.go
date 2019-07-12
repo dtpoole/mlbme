@@ -86,6 +86,7 @@ func getGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup, streamPlaylistU
 
 }
 
+// GetAvailableStreams check for available game streams
 func GetAvailableStreams(c *Config, s *Schedule) (streams map[int]map[string]*Stream) {
 
 	var wg sync.WaitGroup
