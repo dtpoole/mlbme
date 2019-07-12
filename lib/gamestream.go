@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"fmt"
@@ -16,31 +16,36 @@ type Stream struct {
 	MediaFeedType, CallLetters string
 }
 
-func getPlaylistURL(url string) string {
+func getPlaylistURL(url string) (playlist string, err error) {
 
-	resp := httpGet(url)
+	notAvailable := false
+
+	resp, err := httpGet(url)
+	if err != nil {
+		return
+	}
 	defer resp.Body.Close()
 
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		exit(err)
+		return
 	}
 
 	// stream not available
-	matched, err := regexp.Match(`^Not*`, responseData)
-	if err != nil {
-		exit(err)
+	notAvailable, err = regexp.Match(`^Not*`, responseData)
+	if notAvailable || err != nil {
+		return
 	}
 
-	if matched {
-		return ""
-	}
+	// rewrite https to http
+	// TODO: check if needed
+	playlist = strings.Replace(string(responseData), "https", "http", 1)
 
-	return strings.Replace(string(responseData), "https", "http", 1)
+	return
 
 }
 
-func getGameStreams(g Game, ch chan Stream, wg *sync.WaitGroup) {
+func getGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup, streamPlaylistURL string) {
 
 	cdns := [2]string{"akc", "l3c"}
 
@@ -55,8 +60,8 @@ func getGameStreams(g Game, ch chan Stream, wg *sync.WaitGroup) {
 				playlist := ""
 
 				for _, cdn := range cdns {
-					streamURL := fmt.Sprintf(config.StreamPlaylistURL, schedule.Date, strconv.Itoa(item.ID), cdn)
-					playlist = getPlaylistURL(streamURL)
+					streamURL := fmt.Sprintf(streamPlaylistURL, g.GameDate, strconv.Itoa(item.ID), cdn)
+					playlist, _ = getPlaylistURL(streamURL)
 					if playlist != "" {
 						break
 					}
@@ -71,7 +76,7 @@ func getGameStreams(g Game, ch chan Stream, wg *sync.WaitGroup) {
 						StreamPlaylist: playlist,
 					}
 
-					ch <- s
+					ch <- &s
 				}
 			}
 		}
@@ -81,17 +86,17 @@ func getGameStreams(g Game, ch chan Stream, wg *sync.WaitGroup) {
 
 }
 
-func checkAvailableStreams() {
+func GetAvailableStreams(c *Config, s *Schedule) (streams map[int]map[string]*Stream) {
 
 	var wg sync.WaitGroup
 
-	streams = make(map[int]map[string]Stream)
+	//streams = make(map[int]map[string]Stream)
 
-	ch := make(chan Stream)
+	ch := make(chan *Stream)
 
-	for _, g := range *schedule.Games {
+	for _, g := range *s.Games {
 		wg.Add(1)
-		go getGameStreams(g, ch, &wg)
+		go getGameStreams(g, ch, &wg, c.StreamPlaylistURL)
 	}
 
 	go func() {
@@ -101,9 +106,11 @@ func checkAvailableStreams() {
 
 	for v := range ch {
 		if streams[v.GamePk] == nil {
-			streams[v.GamePk] = make(map[string]Stream)
+			streams[v.GamePk] = make(map[string]*Stream)
 		}
 		streams[v.GamePk][v.ID] = v
 	}
+
+	return
 
 }
