@@ -1,8 +1,9 @@
-package main
+package lib
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -85,15 +86,14 @@ type Schedule struct {
 	TotalGames           *int
 	TotalGamesInProgress *int
 	CompletedGames       bool
+	InProgressGames      bool
 	Games                *[]Game
 	GameMap              map[int]Game
 	LastRefreshed        time.Time
 }
 
-// GetMLBSchedule gets today's schedule of games
-func GetMLBSchedule() Schedule {
-
-	var s = new(Schedule)
+// GetMLBSchedule gets a day's schedule of games
+func GetMLBSchedule(url string) (s Schedule, err error) {
 
 	// check for in progress games after midnight, but before 3AM
 	dt := time.Now()
@@ -106,22 +106,31 @@ func GetMLBSchedule() Schedule {
 	s.LastRefreshed = dt
 
 	// we are only getting one day of data
-	s.URL = fmt.Sprintf(config.StatsURL, s.Date)
+	s.URL = fmt.Sprintf(url, s.Date)
 
 	d := new(Data)
 
-	resp := httpGet(s.URL)
+	resp, err := httpGet(s.URL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer resp.Body.Close()
 
 	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
-		exit(err)
+		log.Fatal(err)
 	}
 
 	s.TotalGames = &d.TotalGames
 	s.TotalGamesInProgress = &d.TotalGamesInProgress
 	s.GameMap = make(map[int]Game)
 
+	if d.TotalGamesInProgress > 0 {
+		s.InProgressGames = true
+	}
+
 	if len(d.Dates) > 0 {
+
 		s.Games = &d.Dates[0].Games
 
 		for _, g := range *s.Games {
@@ -135,5 +144,5 @@ func GetMLBSchedule() Schedule {
 		s.Games = &[]Game{}
 	}
 
-	return *s
+	return
 }

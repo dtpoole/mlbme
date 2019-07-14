@@ -1,8 +1,8 @@
 FROM golang as builder
 ENV GO111MODULE=on
 WORKDIR /go/src/github.com/dtpoole/mlbme
-COPY *.go go.mod go.sum  ./
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mlbme .
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -a -installsuffix cgo -o mlbme .
 
 WORKDIR /go/src/go-mlbam-proxy
 RUN git clone https://github.com/jwallet/go-mlbam-proxy.git ./
@@ -20,7 +20,7 @@ RUN set -ex; \
   apk upgrade --no-cache musl; \
   /bin/bash entrypoint.sh \
     -p streamlink \
-    -a bash \
+    -a tzdata \
     -a vlc && \
   ln -s /usr/local/lib/pyenv/versions/*/bin/streamlink /usr/local/streamlink; \
   find /usr/local/lib/pyenv/versions/$PYTHON_VERSION/ -depth \( -name '*.pyo' -o -name '*.pyc' -o -name 'test' -o -name 'tests' -o -name 'SelfTest' \) -exec rm -rf '{}' + ; \

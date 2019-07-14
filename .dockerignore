@@ -1,0 +1,9 @@
+.dockerignore
+Dockerfile
+.git*
+bin
+Makefile
+run.sh
+README*
+VERSION
+go-mlbam-proxy*
