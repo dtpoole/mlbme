@@ -1,7 +1,9 @@
 package lib
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -46,7 +48,7 @@ func (ui *UI) GenerateScoreboard() string {
 		showScore = true
 	}
 
-	fmt.Println("Scoreboard for", ui.schedule.Date, "(as of "+timeFormat(&ui.schedule.LastRefreshed, false)+")")
+	fmt.Println("------\nScoreboard for", ui.schedule.Date, "(as of "+timeFormat(&ui.schedule.LastRefreshed, false)+")")
 
 	for i, g := range *ui.schedule.Games {
 
@@ -56,13 +58,13 @@ func (ui *UI) GenerateScoreboard() string {
 			continue
 		}
 
-		v = append(v, getTeamDisplay(&g, false))
+		v = append(v, ui.getTeamDisplay(&g, false))
 
 		if showScore {
-			v = append(v, getGameScoreDisplay(&g))
+			v = append(v, ui.getGameScoreDisplay(&g))
 		}
 
-		v = append(v, getGameStatusDisplay(&g))
+		v = append(v, ui.getGameStatusDisplay(&g))
 
 		if showStreams {
 			v = append(v, ui.getStreamDisplay(&g))
@@ -102,7 +104,7 @@ func (ui *UI) GenerateScoreboard() string {
 	}
 
 	if total > 0 && ui.config.CheckStreams && len(ui.streams) == 0 {
-		ts.WriteString("No streams available.\n")
+		ts.WriteString("No streams available.\n------\n")
 	}
 
 	return ts.String()
@@ -146,7 +148,7 @@ func (ui *UI) GenerateStreamTable(streams []*Stream) string {
 	ts.WriteString("Multiple Games for " + streams[0].MediaFeedType + " [" + streams[0].CallLetters + "]...")
 	for _, s := range streams {
 		g := ui.schedule.GameMap[s.GamePk]
-		table.Append([]string{s.ID, getTeamDisplay(&g, true)})
+		table.Append([]string{s.ID, ui.getTeamDisplay(&g, true)})
 	}
 	table.Render()
 	return ts.String()
@@ -156,11 +158,11 @@ func (ui *UI) GenerateStreamTable(streams []*Stream) string {
 // GetStartStreamlinkDisplay to show details of the selected stream
 func (ui *UI) GetStartStreamlinkDisplay(s *Stream) (d string) {
 	g := ui.schedule.GameMap[s.GamePk]
-	d = "Starting " + s.MediaFeedType + " [" + s.CallLetters + "] stream for " + getTeamDisplay(&g, true) + "..."
+	d = "Starting " + s.MediaFeedType + " [" + s.CallLetters + "] stream for " + ui.getTeamDisplay(&g, true) + "..."
 	return
 }
 
-func getTeamDisplay(g *Game, singleLine bool) string {
+func (ui *UI) getTeamDisplay(g *Game, singleLine bool) string {
 
 	delim := nl
 	if singleLine {
@@ -169,28 +171,33 @@ func getTeamDisplay(g *Game, singleLine bool) string {
 	return g.Teams.Away.Team.Name + " (" + g.Teams.Away.Team.Abbreviation + ")" + delim + g.Teams.Home.Team.Name + " (" + g.Teams.Home.Team.Abbreviation + ")"
 }
 
-func getGameStatusDisplay(g *Game) string {
+func (ui *UI) getGameStatusDisplay(g *Game) string {
 
+	sc := g.GameStatus.StatusCode
 	sd := &strings.Builder{}
 
-	if g.GameStatus.StatusCode == "I" {
-		sd.WriteString(strings.ToUpper(g.LineScore.InningState[0:3]) + " " + g.LineScore.CurrentInningOrdinal)
-	} else if g.GameStatus.StatusCode == "S" || g.GameStatus.StatusCode == "P" {
+	if sc == "S" || sc == "P" {
+		// scheduled / pre-game
 		t, _ := time.Parse(time.RFC3339, g.GameDate)
 		sd.WriteString(timeFormat(&t, false))
-	} else if match(`^P*`, g.GameStatus.StatusCode) || g.GameStatus.StatusCode == "DR" {
+
+	} else if isActiveGame(g.GameStatus.DetailedState) {
+
+		sd.WriteString(g.LineScore.InningState[0:3] + " " + g.LineScore.CurrentInningOrdinal)
+
+		if isDelayedSuspended(g.GameStatus.DetailedState) {
+			sd.WriteString(nl + g.GameStatus.DetailedState)
+		}
+
+	} else {
 		sd.WriteString(g.GameStatus.DetailedState)
 	}
 
-	if match("^Suspended*", g.GameStatus.DetailedState) {
-		sd.WriteString(nl + g.GameStatus.DetailedState)
-	}
-
-	return strings.TrimSpace(sd.String())
+	return sd.String()
 
 }
 
-func getGameScoreDisplay(g *Game) (s string) {
+func (ui *UI) getGameScoreDisplay(g *Game) (s string) {
 
 	s = nl
 
@@ -198,5 +205,14 @@ func getGameScoreDisplay(g *Game) (s string) {
 		s = strconv.Itoa(g.LineScore.Scoring.Away.Runs) + nl + strconv.Itoa(g.LineScore.Scoring.Home.Runs)
 	}
 
+	return
+}
+
+// Prompt for user input
+func (ui *UI) Prompt() (input string) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(">> ")
+	input, _ = reader.ReadString('\n')
+	input = strings.ToUpper(strings.TrimSpace(input))
 	return
 }

@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -108,13 +106,6 @@ func exit(err error) {
 	os.Exit(code)
 }
 
-func prompt() string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(">> ")
-	input, _ := reader.ReadString('\n')
-	return strings.ToUpper(strings.TrimSpace(input))
-}
-
 func main() {
 
 	flag.Parse()
@@ -159,7 +150,7 @@ func main() {
 	}
 
 	for {
-		input := prompt()
+		input := ui.Prompt()
 		if input == "Q" {
 			exit(nil)
 		} else if input == "R" || input == "" {

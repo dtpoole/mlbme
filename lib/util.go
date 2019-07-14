@@ -72,7 +72,8 @@ func hasGameStarted(state string) bool {
 		"Postponed",
 		"Pre-Game",
 		"Warmup",
-		"Delayed Start: Rain":
+		"Delayed Start: Rain",
+		"Delayed Start: Lightning":
 		return false
 	}
 	return true
@@ -83,10 +84,23 @@ func isActiveGame(state string) bool {
 	switch state {
 	case
 		"In Progress",
-		"Warmup":
+		"Warmup",
+		"Delayed: Rain":
 		return true
 	}
 	return false
+}
+
+func isDelayedSuspended(state string) bool {
+	switch state {
+	case
+		"Ceremony",
+		"Suspended: Rain",
+		"Delayed: Rain":
+		return true
+	}
+	return false
+
 }
 
 func isCompleteGame(state string) bool {
