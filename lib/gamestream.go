@@ -91,8 +91,6 @@ func GetAvailableStreams(c *Config, s *Schedule) (streams map[int]map[string]*St
 
 	var wg sync.WaitGroup
 
-	//streams = make(map[int]map[string]Stream)
-
 	ch := make(chan *Stream)
 
 	for _, g := range *s.Games {

@@ -14,8 +14,7 @@ import (
 
 // Streamlink struct contains execution information streamlink/vlc
 type Streamlink struct {
-	path string
-	//stream  *Stream
+	path    string
 	cmd     *exec.Cmd
 	running bool
 	vlcPath string
@@ -94,9 +93,7 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 		}
 
 	}
-
 	return
-
 }
 
 // Stop the streamlink process
