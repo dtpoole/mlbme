@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
-	"time"
 
 	"github.com/pkg/errors"
 )
@@ -58,7 +57,7 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 		s.vlcPath = s.vlcPath + " --sout '#standard{access=http,mux=ts,dst=:6789}'"
 	}
 
-	s.cmd = exec.Command(s.path, fmt.Sprintf("hlsvariant://%s name_key=bitrate verify=False", stream.StreamPlaylist),
+	s.cmd = exec.Command(s.path, fmt.Sprintf("hls://%s name_key=bitrate verify=False", stream.StreamPlaylist),
 		"best", "--http-header", fmt.Sprintf("User-Agent=%s", UserAgent), "--hls-segment-threads=4",
 		"--https-proxy", "127.0.0.1:9876",
 		"--player", s.vlcPath)
@@ -81,16 +80,9 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 		m := scanner.Text()
 		log.Println(m)
 		// if 403 assume stream isn't available.
-		// check for error opening commerical break stream. if it occurs, sleep for 60 seconds and restart stream.
-		// TODO: check to see if streamlink can handle this
 		if match("403 Client Error: Forbidden", m) {
 			log.Println("Stream is not available.")
 			s.Stop()
-		} else if match("invalid header name for url", m) {
-			log.Println("Unable to open URL. Will reopen stream in 60 secs")
-			s.Stop()
-			time.Sleep(60 * time.Second)
-			s.Run(stream, http)
 		}
 	}
 	return
