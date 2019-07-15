@@ -89,7 +89,7 @@ func startStream(streamID string, http bool) {
 		fmt.Println("Stream doesn't exist.")
 	case 1:
 		fmt.Println(ui.GetStartStreamlinkDisplay(strs[0]))
-		streamlink.Run(strs[0], http)
+		go streamlink.Run(strs[0], http)
 	default:
 		fmt.Println(ui.GenerateStreamTable(strs))
 	}
