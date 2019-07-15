@@ -59,7 +59,8 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 	}
 
 	s.cmd = exec.Command(s.path, fmt.Sprintf("hlsvariant://%s name_key=bitrate verify=False", stream.StreamPlaylist),
-		"best", "--http-header", fmt.Sprintf("\"User-Agent=%s\"", UserAgent), "--hls-segment-threads=4", "--https-proxy", "127.0.0.1:9876",
+		"best", "--http-header", fmt.Sprintf("User-Agent=%s", UserAgent), "--hls-segment-threads=4",
+		"--https-proxy", "127.0.0.1:9876",
 		"--player", s.vlcPath)
 
 	s.cmd.Env = os.Environ()
@@ -91,7 +92,6 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 			time.Sleep(60 * time.Second)
 			s.Run(stream, http)
 		}
-
 	}
 	return
 }
