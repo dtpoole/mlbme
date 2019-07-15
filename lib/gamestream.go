@@ -60,7 +60,7 @@ func getGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup, streamPlaylistU
 				playlist := ""
 
 				for _, cdn := range cdns {
-					streamURL := fmt.Sprintf(streamPlaylistURL, g.GameDate, strconv.Itoa(item.ID), cdn)
+					streamURL := fmt.Sprintf(streamPlaylistURL, g.GameDate[0:10], strconv.Itoa(item.ID), cdn)
 					playlist, _ = getPlaylistURL(streamURL)
 					if playlist != "" {
 						break
@@ -90,6 +90,8 @@ func getGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup, streamPlaylistU
 func GetAvailableStreams(c *Config, s *Schedule) (streams map[int]map[string]*Stream) {
 
 	var wg sync.WaitGroup
+
+	streams = make(map[int]map[string]*Stream)
 
 	ch := make(chan *Stream)
 
