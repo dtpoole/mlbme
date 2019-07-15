@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -146,7 +147,7 @@ func main() {
 	go refresh(true)
 
 	if *streamFlag != "" {
-		startStream(*streamFlag, *httpFlag)
+		startStream(strings.ToUpper(*streamFlag), *httpFlag)
 	}
 
 	for {
