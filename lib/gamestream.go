@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -37,9 +36,7 @@ func getPlaylistURL(url string) (playlist string, err error) {
 		return
 	}
 
-	// rewrite https to http
-	// TODO: check if needed
-	playlist = strings.Replace(string(responseData), "https", "http", 1)
+	playlist = string(responseData)
 
 	return
 
