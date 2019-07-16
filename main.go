@@ -34,7 +34,7 @@ var (
 
 // consts
 const (
-	RefreshRate = 3 * time.Minute
+	RefreshRate = 5 * time.Minute
 )
 
 func init() {
