@@ -176,11 +176,14 @@ func (ui *UI) getGameStatusDisplay(g *Game) string {
 	sc := g.GameStatus.StatusCode
 	sd := &strings.Builder{}
 
-	if sc == "S" || sc == "P" {
+	if sc == "S" || sc == "P" || sc == "PW" {
 		// scheduled / pre-game
 		t, _ := time.Parse(time.RFC3339, g.GameDate)
 		sd.WriteString(timeFormat(&t, false))
-
+		if sc == "PW" {
+			// warmup	
+			sd.WriteString(nl + g.GameStatus.DetailedState)
+		}
 	} else if isActiveGame(g.GameStatus.DetailedState) {
 
 		sd.WriteString(g.LineScore.InningState[0:3] + " " + g.LineScore.CurrentInningOrdinal)
