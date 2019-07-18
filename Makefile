@@ -12,6 +12,9 @@ build:
 install:
 	go install ${LDFLG} -mod=vendor -v
 
+image: 
+	docker build . -t dtpoole/${BINARY}
+
 clean:
 	rm -rf ./release
 	rm $(BINARY)
@@ -25,4 +28,4 @@ $(PLATFORMS):
 
 release: windows linux darwin
 
-.PHONY: $(PLATFORMS) release build clean install fmt
+.PHONY: $(PLATFORMS) release build clean install fmt image
