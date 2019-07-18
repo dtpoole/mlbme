@@ -19,7 +19,7 @@ type Proxy struct {
 	cmd           *exec.Cmd
 }
 
-// NewProxy creates initialize the Proxy struct
+// NewProxy initializes the Proxy struct
 func NewProxy(c *Config) (p Proxy, err error) {
 
 	proxyPaths := []string{"go-mlbam-proxy", "go-mlbam-proxy/go-mlbam-proxy", "/usr/local/bin/go-mlbam-proxy"}
