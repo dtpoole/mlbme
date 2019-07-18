@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"regexp"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -32,6 +34,11 @@ func init() {
 }
 
 func httpGet(url string) (resp *http.Response, err error) {
+
+	log.WithFields(log.Fields{
+		"url": url,
+	}).Debug("HTTP Request")
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return
@@ -42,6 +49,12 @@ func httpGet(url string) (resp *http.Response, err error) {
 	if err != nil {
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"statusCode": resp.StatusCode,
+		"url":        url,
+	}).Debug("HTTP Response")
+
 	return
 }
 

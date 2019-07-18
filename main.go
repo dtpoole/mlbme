@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/alexflint/go-arg"
 	"github.com/dtpoole/mlbme/lib"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -113,6 +113,18 @@ func main() {
 	var args args
 	args.Config = "config.json"
 	arg.MustParse(&args)
+
+	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+	})
+
+	if args.Debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	log.Debug("Debug logging enabled")
 
 	config, err = lib.LoadConfig(args.Config)
 	if err != nil {
