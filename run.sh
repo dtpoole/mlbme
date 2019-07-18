@@ -15,4 +15,5 @@ docker run \
     --dns=1.1.1.1 \
 	--name mlbme \
 	-p 6789:6789 \
+	-v $(pwd)/config.json:/app/config.json \
 	-it dtpoole/mlbme $@
