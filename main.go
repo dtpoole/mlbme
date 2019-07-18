@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/alexflint/go-arg"
 	"github.com/dtpoole/mlbme/lib"
 )
 
@@ -24,13 +24,13 @@ var (
 	version     string
 )
 
-var (
-	configFlag  = flag.String("config", "config.json", "JSON configuration")
-	httpFlag    = flag.Bool("http", false, "Tell VLC to use HTTP streaming instead of playing locally")
-	teamFlag    = flag.String("team", "", "Filter on team by abbreviation")
-	streamFlag  = flag.String("stream", "", "Call letter of stream to start")
-	versionFlag = flag.Bool("v", false, "Display version")
-)
+type args struct {
+	Config string `arg:"-c" help:"JSON configuration"`
+	HTTP   bool   `help:"use HTTP streaming instead of playing locally"`
+	Team   string `arg:"-t" help:"filter on team by abbreviation"`
+	Stream string `arg:"-s" help:"call letter of stream to start"`
+	Debug  bool   `arg:"-d" help:"enable debug logging"`
+}
 
 // consts
 const (
@@ -104,16 +104,17 @@ func exit(err error) {
 	os.Exit(code)
 }
 
+func (args) Version() string {
+	return "mlbme " + version
+}
+
 func main() {
 
-	flag.Parse()
+	var args args
+	args.Config = "config.json"
+	arg.MustParse(&args)
 
-	if *versionFlag {
-		fmt.Println(version)
-		os.Exit(0)
-	}
-
-	config, err = lib.LoadConfig(*configFlag)
+	config, err = lib.LoadConfig(args.Config)
 	if err != nil {
 		exit(err)
 	}
@@ -138,15 +139,15 @@ func main() {
 
 	refresh(false)
 
-	ui = lib.NewUI(config, &schedule, gamestreams.Streams, *teamFlag)
+	ui = lib.NewUI(config, &schedule, gamestreams.Streams, args.Team)
 
 	fmt.Print(ui.GenerateScoreboard())
 
 	// setup background refresh
 	go refresh(true)
 
-	if *streamFlag != "" {
-		startStream(strings.ToUpper(*streamFlag), *httpFlag)
+	if args.Stream != "" {
+		startStream(strings.ToUpper(args.Stream), args.HTTP)
 	}
 
 	for {
@@ -158,7 +159,7 @@ func main() {
 		} else if input == "H" {
 			fmt.Println("[call letters] = play stream\nr = refresh\nq = quit")
 		} else {
-			startStream(input, *httpFlag)
+			startStream(input, args.HTTP)
 		}
 	}
 }
