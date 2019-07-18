@@ -14,14 +14,14 @@ import (
 )
 
 var (
-	config     *lib.Config
-	schedule   lib.Schedule
-	streams    map[int]map[string]*lib.Stream
-	proxy      lib.Proxy
-	streamlink lib.Streamlink
-	ui         lib.UI
-	err        error
-	version    string
+	config      *lib.Config
+	schedule    lib.Schedule
+	proxy       lib.Proxy
+	streamlink  lib.Streamlink
+	gamestreams lib.GameStreams
+	ui          lib.UI
+	err         error
+	version     string
 )
 
 var (
@@ -57,10 +57,7 @@ func refresh(periodic bool) {
 		}
 
 		if config.CheckStreams {
-			streams = lib.GetAvailableStreams(config, &schedule)
-			// if err != nil {
-			// 	exit(err)
-			// }
+			gamestreams.GetAvailableStreams()
 		}
 	}
 
@@ -77,7 +74,7 @@ func refresh(periodic bool) {
 func startStream(streamID string, http bool) {
 	var strs []*lib.Stream
 
-	for _, gs := range streams {
+	for _, gs := range gamestreams.Streams {
 		for _, s := range gs {
 			if s.ID == streamID || s.CallLetters == streamID {
 				strs = append(strs, s)
@@ -133,13 +130,15 @@ func main() {
 			exit(err)
 		}
 
+		gamestreams = lib.NewGameStreams(config, &schedule)
+
 		proxy.Run()
 
 	}
 
 	refresh(false)
 
-	ui = lib.NewUI(config, &schedule, streams, *teamFlag)
+	ui = lib.NewUI(config, &schedule, gamestreams.Streams, *teamFlag)
 
 	fmt.Print(ui.GenerateScoreboard())
 

@@ -8,6 +8,13 @@ import (
 	"sync"
 )
 
+// GameStreams struct holds game stream information
+type GameStreams struct {
+	config   *Config
+	schedule *Schedule
+	Streams  map[int]map[string]*Stream
+}
+
 // Stream contains information on the video stream.
 type Stream struct {
 	GamePk                     int
@@ -15,7 +22,16 @@ type Stream struct {
 	MediaFeedType, CallLetters string
 }
 
-func getPlaylistURL(url string) (playlist string, err error) {
+// NewGameStreams creates a GameStreams
+func NewGameStreams(c *Config, s *Schedule) (gs GameStreams) {
+	gs.config = c
+	gs.schedule = s
+	gs.Streams = make(map[int]map[string]*Stream)
+
+	return
+}
+
+func (gs *GameStreams) getPlaylistURL(url string) (playlist string, err error) {
 
 	notAvailable := false
 
@@ -42,7 +58,7 @@ func getPlaylistURL(url string) (playlist string, err error) {
 
 }
 
-func getGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup, streamPlaylistURL string) {
+func (gs *GameStreams) findGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup) {
 
 	cdns := [2]string{"akc", "l3c"}
 
@@ -57,8 +73,8 @@ func getGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup, streamPlaylistU
 				playlist := ""
 
 				for _, cdn := range cdns {
-					streamURL := fmt.Sprintf(streamPlaylistURL, g.GameDate[0:10], strconv.Itoa(item.ID), cdn)
-					playlist, _ = getPlaylistURL(streamURL)
+					streamURL := fmt.Sprintf(gs.config.StreamPlaylistURL, gs.schedule.Date, strconv.Itoa(item.ID), cdn)
+					playlist, _ = gs.getPlaylistURL(streamURL)
 					if playlist != "" {
 						break
 					}
@@ -84,17 +100,14 @@ func getGameStreams(g Game, ch chan *Stream, wg *sync.WaitGroup, streamPlaylistU
 }
 
 // GetAvailableStreams check for available game streams
-func GetAvailableStreams(c *Config, s *Schedule) (streams map[int]map[string]*Stream) {
+func (gs *GameStreams) GetAvailableStreams() {
 
 	var wg sync.WaitGroup
-
-	streams = make(map[int]map[string]*Stream)
-
 	ch := make(chan *Stream)
 
-	for _, g := range *s.Games {
+	for _, g := range *gs.schedule.Games {
 		wg.Add(1)
-		go getGameStreams(g, ch, &wg, c.StreamPlaylistURL)
+		go gs.findGameStreams(g, ch, &wg)
 	}
 
 	go func() {
@@ -103,10 +116,10 @@ func GetAvailableStreams(c *Config, s *Schedule) (streams map[int]map[string]*St
 	}()
 
 	for v := range ch {
-		if streams[v.GamePk] == nil {
-			streams[v.GamePk] = make(map[string]*Stream)
+		if gs.Streams[v.GamePk] == nil {
+			gs.Streams[v.GamePk] = make(map[string]*Stream)
 		}
-		streams[v.GamePk][v.ID] = v
+		gs.Streams[v.GamePk][v.ID] = v
 	}
 
 	return
