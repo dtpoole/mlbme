@@ -2,7 +2,7 @@ FROM golang:1.12 as builder
 ENV GO111MODULE=on
 WORKDIR /go/src/github.com/dtpoole/mlbme
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -a -installsuffix cgo -o mlbme .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.version=`cat VERSION`" -mod=vendor -a -installsuffix cgo -o mlbme .
 
 WORKDIR /go/src/go-mlbam-proxy
 RUN git clone https://github.com/jwallet/go-mlbam-proxy.git ./
