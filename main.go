@@ -67,6 +67,7 @@ func refresh(periodic bool) {
 		ticker := time.NewTicker(RefreshRate)
 		for range ticker.C {
 			r()
+			fmt.Print(ui.GenerateScoreboard())
 		}
 	}
 }
