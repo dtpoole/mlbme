@@ -3,8 +3,9 @@ package lib
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Score represents line score for team
@@ -95,6 +96,8 @@ type Schedule struct {
 // GetMLBSchedule gets a day's schedule of games
 func GetMLBSchedule(url string) (s Schedule, err error) {
 
+	log.Debug("Getting MLB schedule")
+
 	// check for in progress games after midnight, but before 3AM
 	dt := time.Now()
 	if dt.Hour() <= 3 {
@@ -143,6 +146,14 @@ func GetMLBSchedule(url string) (s Schedule, err error) {
 	} else {
 		s.Games = &[]Game{}
 	}
+
+	log.WithFields(log.Fields{
+		"totalGames":           d.TotalGames,
+		"totalGamesInProgress": d.TotalGamesInProgress,
+		"completedGames":       s.CompletedGames,
+		"date":                 s.Date,
+		"lastRefreshed":        s.LastRefreshed,
+	}).Debug("scoreboard stats")
 
 	return
 }
