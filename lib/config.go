@@ -38,7 +38,10 @@ func LoadConfig(file string) (config *Config, err error) {
 	}
 
 	jsonParser := json.NewDecoder(configFile)
-	jsonParser.Decode(&config)
+	if err = jsonParser.Decode(&config); err != nil {
+		err = errors.New("Unable to parse JSON config file")
+		return
+	}
 
 	if config.StatsURL == "" {
 		err = errors.New("Set statsURL in configuration file")
