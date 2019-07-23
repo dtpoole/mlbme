@@ -17,9 +17,9 @@ RUN set -ex; \
   addgroup -g 1000 $USER && adduser -D -u 1000 -G $USER $USER; \
   echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories; \
   echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories; \
-  apk upgrade --no-cache musl; \
+  apk upgrade --no-cache; \
   /bin/bash entrypoint.sh \
-    -p streamlink \
+    -p streamlink==1.1.1 \
     -a tzdata \
     -a vlc && \
   ln -s /usr/local/lib/pyenv/versions/*/bin/streamlink /usr/local/streamlink; \
@@ -34,4 +34,4 @@ COPY config.json  ./
 
 USER $USER
 EXPOSE 6789/tcp
-ENTRYPOINT [ "./mlbme" ]
+ENTRYPOINT [ "mlbme" ]
