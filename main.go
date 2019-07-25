@@ -29,7 +29,7 @@ type args struct {
 	HTTP   bool   `help:"use HTTP streaming instead of playing locally"`
 	Team   string `arg:"-t" help:"filter on team by abbreviation"`
 	Stream string `arg:"-s" help:"call letter of stream to start"`
-	Debug  bool   `arg:"-d" help:"enable debug logging"`
+	Debug  bool   `help:"enable debug logging"`
 }
 
 // consts
@@ -86,6 +86,10 @@ func startStream(streamID string, http bool) {
 	case 0:
 		fmt.Println("Stream doesn't exist.")
 	case 1:
+		if streamlink.Running {
+			streamlink.Stop()
+		}
+
 		fmt.Println(ui.GetStartStreamlinkDisplay(strs[0]))
 		go streamlink.Run(strs[0], http)
 	default:

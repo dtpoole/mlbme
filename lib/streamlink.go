@@ -16,7 +16,7 @@ import (
 type Streamlink struct {
 	path    string
 	cmd     *exec.Cmd
-	running bool
+	Running bool
 	vlcPath string
 }
 
@@ -58,6 +58,11 @@ func NewStreamlink() (s Streamlink, err error) {
 // Run streamlink
 func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 
+	if s.Running {
+		err = errors.New("Stream is currently running")
+		return
+	}
+
 	if http || match("cvlc", s.vlcPath) {
 		log.Debug("HTTP streaming enabled.")
 		s.vlcPath = s.vlcPath + " --sout '#standard{access=http,mux=ts,dst=:6789}'"
@@ -83,7 +88,7 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 		"cmd": strings.Join(s.cmd.Args, " "),
 	}).Debug("Started streamlink")
 
-	s.running = true
+	s.Running = true
 
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(bufio.ScanLines)
@@ -106,9 +111,9 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 
 // Stop the streamlink process
 func (s *Streamlink) Stop() (err error) {
-	if s.running {
+	if s.Running {
 		err = s.cmd.Process.Signal(syscall.SIGTERM)
-		s.running = false
+		s.Running = false
 		log.Debug("Stopped streamlink")
 	}
 	return
