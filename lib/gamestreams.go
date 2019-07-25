@@ -48,6 +48,11 @@ func (gs *GameStreams) getPlaylistURL(url string) (playlist string, err error) {
 		return
 	}
 
+	log.WithFields(log.Fields{
+		"url":          url,
+		"responseData": string(responseData),
+	}).Debug("stream playlist")
+
 	// stream not available
 	notAvailable, err = regexp.Match(`^Not*`, responseData)
 	if notAvailable || err != nil {
