@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // GameStreams struct holds game stream information
@@ -68,6 +70,15 @@ func (gs *GameStreams) findGameStreams(g Game, ch chan *Stream, wg *sync.WaitGro
 		}
 
 		for _, item := range epg.MediaItems {
+
+			log.WithFields(log.Fields{
+				"streamID":      item.ID,
+				"gamePK":        g.GamePk,
+				"mediaState":    item.MediaState,
+				"mediaFeedType": item.MediaFeedType,
+				"callLetters":   item.CallLetters,
+			}).Debug("Found media item")
+
 			if item.MediaState == "MEDIA_ON" {
 
 				playlist := ""
@@ -90,6 +101,16 @@ func (gs *GameStreams) findGameStreams(g Game, ch chan *Stream, wg *sync.WaitGro
 					}
 
 					ch <- &s
+
+					log.WithFields(log.Fields{
+						"streamID":       item.ID,
+						"gamePK":         g.GamePk,
+						"mediaState":     item.MediaState,
+						"mediaFeedType":  item.MediaFeedType,
+						"callLetters":    item.CallLetters,
+						"streamPlaylist": playlist,
+					}).Debug("Found stream")
+
 				}
 			}
 		}
@@ -104,6 +125,8 @@ func (gs *GameStreams) GetAvailableStreams() {
 
 	var wg sync.WaitGroup
 	ch := make(chan *Stream)
+
+	log.Debug("Checking for game streams")
 
 	for _, g := range *gs.schedule.Games {
 		wg.Add(1)
@@ -121,6 +144,10 @@ func (gs *GameStreams) GetAvailableStreams() {
 		}
 		gs.Streams[v.GamePk][v.ID] = v
 	}
+
+	log.WithFields(log.Fields{
+		"streamCnt": len(gs.Streams),
+	}).Debug("Finished checking streams")
 
 	return
 

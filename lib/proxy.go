@@ -1,12 +1,14 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 
-	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // Proxy struct contains execution information for the proxy
@@ -41,6 +43,13 @@ func NewProxy(c *Config) (p Proxy, err error) {
 	p.cmd = exec.Command(p.path, "-d", p.domain, "-p", p.port, "-s", p.sourceDomains)
 	p.cmd.Env = os.Environ()
 
+	log.WithFields(log.Fields{
+		"path":          p.path,
+		"domain":        p.domain,
+		"sourceDomains": p.sourceDomains,
+		"port":          p.port,
+	}).Debug("NewProxy")
+
 	return
 }
 
@@ -50,6 +59,9 @@ func (p *Proxy) Run() (err error) {
 		p.running = false
 	} else {
 		p.running = true
+		log.WithFields(log.Fields{
+			"cmd": strings.Join(p.cmd.Args, " "),
+		}).Debug("Started proxy")
 	}
 	return
 }
@@ -59,6 +71,7 @@ func (p *Proxy) Stop() (err error) {
 	if p.running {
 		err = p.cmd.Process.Signal(syscall.SIGTERM)
 		p.running = false
+		log.Debug("Stopped proxy")
 	}
 	return
 }
