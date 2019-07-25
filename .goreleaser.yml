@@ -1,0 +1,33 @@
+builds:
+- env:
+  - CGO_ENABLED=0
+  - GO111MODULE=on
+  goos:
+  - linux
+  - darwin
+  - windows
+  goarch:
+  - amd64
+  ldflags:
+  - -X main.version={{.Version}}
+archives:
+- replacements:
+    darwin: macOS
+    amd64: x86_64
+  files:
+  - LICENSE
+  - README.md
+  - config.json
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+# dockers:
+#   - image_templates:
+#     - dtpoole/mlbme
+#     build_flag_templates:
+#     - "--label=org.label-schema.schema-version=1.0"
+#     - "--label=org.label-schema.version={{.Version}}"
+#     - "--label=org.label-schema.name={{.ProjectName}}"
