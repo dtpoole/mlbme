@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o go-mlbam-proxy .
 
 FROM jfloff/alpine-python:3.7-slim
 ENV USER=xxx
-ENV PATH="/app:/usr/local/bin:${PATH}"
+ENV PATH="/app:${PATH}"
 
 RUN set -ex; \
   addgroup -g 1000 $USER && adduser -D -u 1000 -G $USER $USER; \
@@ -22,7 +22,6 @@ RUN set -ex; \
     -p streamlink==1.1.1 \
     -a tzdata \
     -a vlc && \
-  ln -s /usr/local/lib/pyenv/versions/*/bin/streamlink /usr/local/streamlink; \
   find /usr/local/lib/pyenv/versions/$PYTHON_VERSION/ -depth \( -name '*.pyo' -o -name '*.pyc' -o -name 'test' -o -name 'tests' -o -name 'SelfTest' \) -exec rm -rf '{}' + ; \
   rm -rf /root/.cache/pip;
 
