@@ -67,6 +67,7 @@ func refresh(periodic bool) {
 		ticker := time.NewTicker(RefreshRate)
 		for range ticker.C {
 			r()
+			fmt.Print(ui.GenerateScoreboard())
 		}
 	}
 }
@@ -101,7 +102,7 @@ func exit(err error) {
 	code := 0
 	if err != nil {
 		code = 1
-		log.Println(err)
+		fmt.Println("ERROR:", err)
 	}
 	streamlink.Stop()
 	proxy.Stop()
