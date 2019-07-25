@@ -54,7 +54,7 @@ func (ui *UI) GenerateScoreboard() string {
 
 		col := i % 2
 
-		if !empty(ui.team) && (g.Teams.Away.Team.Abbreviation != ui.team && g.Teams.Home.Team.Abbreviation != ui.team) {
+		if ui.team != "" && (g.Teams.Away.Team.Abbreviation != ui.team && g.Teams.Home.Team.Abbreviation != ui.team) {
 			continue
 		}
 
@@ -71,7 +71,7 @@ func (ui *UI) GenerateScoreboard() string {
 		}
 
 		if col == 0 {
-			if empty(ui.team) {
+			if ui.team == "" {
 				v = append(v, nl)
 			}
 		} else {
@@ -181,7 +181,7 @@ func (ui *UI) getGameStatusDisplay(g *Game) string {
 		t, _ := time.Parse(time.RFC3339, g.GameDate)
 		sd.WriteString(timeFormat(&t, false))
 		if sc == "PW" {
-			// warmup	
+			// warmup
 			sd.WriteString(nl + g.GameStatus.DetailedState)
 		}
 	} else if isActiveGame(g.GameStatus.DetailedState) {

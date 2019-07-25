@@ -58,13 +58,6 @@ func httpGet(url string) (resp *http.Response, err error) {
 	return
 }
 
-func empty(in string) bool {
-	if in == "" {
-		return true
-	}
-	return false
-}
-
 func match(pattern string, in string) bool {
 	m, _ := regexp.MatchString(pattern, in)
 	return m
