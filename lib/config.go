@@ -2,9 +2,9 @@ package lib
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
-
-	"github.com/pkg/errors"
 )
 
 // Config hold app configuration options
@@ -22,18 +22,14 @@ type Config struct {
 func LoadConfig(file string) (config *Config, err error) {
 
 	if _, err = os.Stat(file); os.IsNotExist(err) {
-		err = errors.Wrapf(err,
-			"File %s not found",
-			file)
+		err = fmt.Errorf("File %s not found", file)
 		return
 	}
 
 	configFile, err := os.Open(file)
 	defer configFile.Close()
 	if err != nil {
-		err = errors.Wrapf(err,
-			"Unable to open %s",
-			file)
+		err = fmt.Errorf("Unable to open %s", file)
 		return
 	}
 
