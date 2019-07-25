@@ -2,13 +2,14 @@ package lib
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 
-	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // Streamlink struct contains execution information streamlink/vlc
@@ -30,7 +31,7 @@ func NewStreamlink() (s Streamlink, err error) {
 	}
 
 	if s.path == "" {
-		err = errors.New(" Unable to find streamlink in path")
+		err = errors.New("Unable to find streamlink in path")
 		return
 	}
 
@@ -42,9 +43,14 @@ func NewStreamlink() (s Streamlink, err error) {
 	}
 
 	if s.vlcPath == "" {
-		err = errors.New(" Unable to find VLC in path")
+		err = errors.New("Unable to find VLC in path")
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"streamlinkPath": s.path,
+		"vlcPath":        s.vlcPath,
+	}).Debug("NewStreamlink")
 
 	return
 }
@@ -53,7 +59,7 @@ func NewStreamlink() (s Streamlink, err error) {
 func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 
 	if http || match("cvlc", s.vlcPath) {
-		log.Println("HTTP streaming enabled.")
+		log.Debug("HTTP streaming enabled.")
 		s.vlcPath = s.vlcPath + " --sout '#standard{access=http,mux=ts,dst=:6789}'"
 	}
 
@@ -66,11 +72,16 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-	if err := s.cmd.Start(); err != nil {
-		log.Fatal("Unable to start streamlink: ", err)
+	if err = s.cmd.Start(); err != nil {
+		err = errors.New("Unable to start streamlink")
+		return
 	}
+
+	log.WithFields(log.Fields{
+		"cmd": strings.Join(s.cmd.Args, " "),
+	}).Debug("Started streamlink")
 
 	s.running = true
 
@@ -78,11 +89,16 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		m := scanner.Text()
-		log.Println(m)
+		log.Debug(m)
 		// if 403 assume stream isn't available.
 		if match("403 Client Error: Forbidden", m) {
-			log.Println("Stream is not available.")
+			err = errors.New("Stream is not available")
 			s.Stop()
+			return
+		} else if match("Stream ended", m) {
+			fmt.Println("\nStream ended")
+			s.Stop()
+			return
 		}
 	}
 	return
@@ -93,6 +109,7 @@ func (s *Streamlink) Stop() (err error) {
 	if s.running {
 		err = s.cmd.Process.Signal(syscall.SIGTERM)
 		s.running = false
+		log.Debug("Stopped streamlink")
 	}
 	return
 }
