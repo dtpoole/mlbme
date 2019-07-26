@@ -21,13 +21,22 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{.Tag}}-dev"
 changelog:
   sort: asc
-# dockers:
-#   - image_templates:
-#     - dtpoole/mlbme
-#     build_flag_templates:
-#     - "--label=org.label-schema.schema-version=1.0"
-#     - "--label=org.label-schema.version={{.Version}}"
-#     - "--label=org.label-schema.name={{.ProjectName}}"
+dockers:
+  - image_templates:
+    - "dtpoole/mlbme:latest"
+    - "dtpoole/mlbme:{{.Version}}"
+    build_flag_templates:
+    - "--label=org.label-schema.schema-version=1.0"
+    - "--label=org.label-schema.version={{.Version}}"
+    - "--label=org.label-schema.name={{.ProjectName}}"
+    - "--build-arg=VERSION={{.Tag}}"
+    extra_files:
+    - main.go
+    - lib
+    - vendor
+    - go.mod
+    - go.sum
+    - config.json
