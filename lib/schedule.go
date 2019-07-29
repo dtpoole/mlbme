@@ -86,6 +86,7 @@ type Schedule struct {
 	URL                  string
 	TotalGames           *int
 	TotalGamesInProgress *int
+	TotalCompletedGames  int
 	CompletedGames       bool
 	InProgressGames      bool
 	Games                *[]Game
@@ -115,13 +116,13 @@ func GetMLBSchedule(url string) (s Schedule, err error) {
 
 	resp, err := httpGet(s.URL)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
-		log.Fatal(err)
+	if err = json.NewDecoder(resp.Body).Decode(&d); err != nil {
+		return
 	}
 
 	s.TotalGames = &d.TotalGames
@@ -140,6 +141,7 @@ func GetMLBSchedule(url string) (s Schedule, err error) {
 			s.GameMap[g.GamePk] = g
 			if isCompleteGame(g.GameStatus.DetailedState) {
 				s.CompletedGames = true
+				s.TotalCompletedGames++
 			}
 		}
 
@@ -150,6 +152,7 @@ func GetMLBSchedule(url string) (s Schedule, err error) {
 	log.WithFields(log.Fields{
 		"totalGames":           d.TotalGames,
 		"totalGamesInProgress": d.TotalGamesInProgress,
+		"totalCompletedGames":  s.TotalCompletedGames,
 		"completedGames":       s.CompletedGames,
 		"date":                 s.Date,
 		"lastRefreshed":        s.LastRefreshed,
