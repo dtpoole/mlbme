@@ -13,5 +13,6 @@
 
 mlbme
 go-mlbam-proxy*
+dist
 
 .DS_Store
