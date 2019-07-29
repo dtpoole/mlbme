@@ -84,7 +84,7 @@ func (gs *GameStreams) findGameStreams(g Game, ch chan *Stream, wg *sync.WaitGro
 				"callLetters":   item.CallLetters,
 			}).Debug("Found media item")
 
-			if item.MediaState == "MEDIA_ON" {
+			if item.MediaState != "MEDIA_OFF" {
 
 				playlist := ""
 
