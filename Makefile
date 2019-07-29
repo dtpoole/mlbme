@@ -1,8 +1,6 @@
 BINARY := mlbme
 VERSION := $(shell cat ./VERSION)
 LDFLG := -ldflags "-X main.version=$(VERSION)"
-PLATFORMS := windows linux darwin
-os = $(word 1, $@)
 
 all: build
 
@@ -13,19 +11,12 @@ install:
 	go install ${LDFLG} -mod=vendor -v
 
 image: 
-	docker build . -t dtpoole/${BINARY}
+	docker build . -t dtpoole/${BINARY} --build-arg=VERSION=${VERSION}
 
 clean:
-	rm -rf ./release
 	rm $(BINARY)
 
 fmt:
 	go fmt
 
-$(PLATFORMS):
-	mkdir -p release
-	GOOS=$(os) GOARCH=amd64 go build ${LDFLG} -mod=vendor -v -o release/$(BINARY)-$(VERSION)-$(os)-amd64
-
-release: windows linux darwin
-
-.PHONY: $(PLATFORMS) release build clean install fmt image
+.PHONY: build clean install fmt image
