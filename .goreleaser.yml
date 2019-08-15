@@ -18,6 +18,9 @@ archives:
   - LICENSE
   - README.md
   - config.json
+  format_overrides:
+  - goos: windows
+    format: zip
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -33,6 +36,7 @@ dockers:
     - "--label=org.label-schema.version={{.Version}}"
     - "--label=org.label-schema.name={{.ProjectName}}"
     - "--build-arg=VERSION={{.Tag}}"
+    skip_push: true
     extra_files:
     - main.go
     - lib
