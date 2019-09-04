@@ -1,5 +1,7 @@
 # mlbme
 
+[![Build Status](https://travis-ci.org/dtpoole/mlbme.svg?branch=master)](https://travis-ci.org/dtpoole/mlbme)
+
 ```
 Scoreboard:  2019-06-19 9:25PM
 +-----------------+---+---------+--+-----------------+----+---------+
