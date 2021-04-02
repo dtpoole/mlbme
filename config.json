@@ -3,6 +3,8 @@
     "streamPlaylistURL": "",
     "checkStreams": false,
     "proxy": {
+        "path": "go-mlbam-proxy-1.1.1/go-mlbam-proxy-1.1.1",
+        "port": 8050,
         "domain": "",
         "sourceDomains": ""
     }
