@@ -5,10 +5,10 @@ LDFLG := -ldflags "-X main.version=$(VERSION)"
 all: build
 
 build:
-	go build ${LDFLG} -mod=vendor -v
+	go build ${LDFLG} -v
 
 install:
-	go install ${LDFLG} -mod=vendor -v
+	go install ${LDFLG} -v
 
 image: 
 	docker build . -t dtpoole/${BINARY} --build-arg=VERSION=${VERSION}

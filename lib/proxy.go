@@ -32,7 +32,7 @@ func NewProxy(c *Config) (p Proxy, err error) {
 	}
 
 	if p.path == "" {
-		err = errors.New("Unable to find go-mlbam-proxy in path")
+		err = errors.New("unable to find go-mlbam-proxy in path")
 		return
 	}
 

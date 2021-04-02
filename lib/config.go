@@ -22,36 +22,38 @@ type Config struct {
 func LoadConfig(file string) (config *Config, err error) {
 
 	if _, err = os.Stat(file); os.IsNotExist(err) {
-		err = fmt.Errorf("File %s not found", file)
+		err = fmt.Errorf("file %s not found", file)
 		return
 	}
 
 	configFile, err := os.Open(file)
-	defer configFile.Close()
+
 	if err != nil {
-		err = fmt.Errorf("Unable to open %s", file)
+		err = fmt.Errorf("unable to open %s", file)
 		return
 	}
 
 	jsonParser := json.NewDecoder(configFile)
 	if err = jsonParser.Decode(&config); err != nil {
-		err = errors.New("Unable to parse JSON config file")
+		err = errors.New("unable to parse JSON config file")
 		return
 	}
 
+	configFile.Close()
+
 	if config.StatsURL == "" {
-		err = errors.New("Set statsURL in configuration file")
+		err = errors.New("set statsURL in configuration file")
 	}
 
 	if config.CheckStreams {
 		if config.StreamPlaylistURL == "" {
-			err = errors.New("Set streamPlaylistURL in configuration file")
+			err = errors.New("set streamPlaylistURL in configuration file")
 		}
 		if config.Proxy.Domain == "" {
-			err = errors.New("Set proxy domain in configuration file")
+			err = errors.New("set proxy domain in configuration file")
 		}
 		if config.Proxy.SourceDomains == "" {
-			err = errors.New("Set source domains in configuration file")
+			err = errors.New("set source domains in configuration file")
 		}
 	}
 
