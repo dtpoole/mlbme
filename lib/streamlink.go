@@ -12,12 +12,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Streamlink struct contains execution information streamlink/vlc
+// Streamlink struct contains execution information streamlink
 type Streamlink struct {
 	path    string
 	cmd     *exec.Cmd
 	Running bool
-	vlcPath string
 }
 
 // NewStreamlink creates initialize the Streamlink struct
@@ -31,25 +30,12 @@ func NewStreamlink() (s Streamlink, err error) {
 	}
 
 	if s.path == "" {
-		err = errors.New("Unable to find streamlink in path")
-		return
-	}
-
-	vlcPaths := []string{"cvlc", "vlc", "/Applications/VLC.app/Contents/MacOS/VLC", "~/Applications/VLC.app/Contents/MacOS/VLC"}
-	for _, path := range vlcPaths {
-		if s.vlcPath, err = exec.LookPath(path); err == nil {
-			break
-		}
-	}
-
-	if s.vlcPath == "" {
-		err = errors.New("Unable to find VLC in path")
+		err = errors.New("unable to find streamlink in path")
 		return
 	}
 
 	log.WithFields(log.Fields{
 		"streamlinkPath": s.path,
-		"vlcPath":        s.vlcPath,
 	}).Debug("NewStreamlink")
 
 	return
@@ -59,19 +45,16 @@ func NewStreamlink() (s Streamlink, err error) {
 func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 
 	if s.Running {
-		err = errors.New("Stream is currently running")
+		err = errors.New("stream is currently running")
 		return
-	}
-
-	if http || match("cvlc", s.vlcPath) {
-		log.Debug("HTTP streaming enabled.")
-		s.vlcPath = s.vlcPath + " --sout '#standard{access=http,mux=ts,dst=:6789}'"
 	}
 
 	s.cmd = exec.Command(s.path, fmt.Sprintf("hls://%s name_key=bitrate verify=False", stream.StreamPlaylist),
 		"best", "--http-header", fmt.Sprintf("User-Agent=%s", UserAgent), "--hls-segment-threads=4",
-		"--https-proxy", "127.0.0.1:9876",
-		"--player", s.vlcPath)
+		"--https-proxy", "https://127.0.0.1:9876",
+		"--player-external-http",
+		"--player-external-http-port", "6789",
+	)
 
 	s.cmd.Env = os.Environ()
 
@@ -80,7 +63,7 @@ func (s *Streamlink) Run(stream *Stream, http bool) (err error) {
 		return
 	}
 	if err = s.cmd.Start(); err != nil {
-		err = errors.New("Unable to start streamlink")
+		err = errors.New("unable to start streamlink")
 		return
 	}
 

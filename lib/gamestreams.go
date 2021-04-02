@@ -154,6 +154,4 @@ func (gs *GameStreams) GetAvailableStreams() {
 		"streamCnt": len(gs.Streams),
 	}).Debug("Finished checking streams")
 
-	return
-
 }
